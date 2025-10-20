@@ -3,6 +3,7 @@ import { Minigame } from '../types';
 import GameChat, { ChatMessage } from './GameChat';
 import { refineMinigameCode } from '../Services/geminiService';
 import { GRADES, SUBJECTS } from '../constants';
+import { useSettings } from '../Context/SettingsContext';
 
 
 interface GameViewerProps {
@@ -25,6 +26,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
         { sender: 'system', text: 'This is a new game! Tell me what you want to change or add.' }
     ]);
     const [isGenerating, setIsGenerating] = useState(false);
+    const { settings } = useSettings();
 
     useEffect(() => {
         setIsShowing(true);
@@ -50,7 +52,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
         setIsGenerating(true);
 
         try {
-            const newHtmlContent = await refineMinigameCode(message, currentGame.htmlContent);
+            const newHtmlContent = await refineMinigameCode(message, currentGame.htmlContent, settings);
             const updatedGame = { ...currentGame, htmlContent: newHtmlContent };
             setCurrentGame(updatedGame);
             onGameUpdate(game.id, newHtmlContent);
@@ -62,7 +64,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
         } finally {
             setIsGenerating(false);
         }
-    }, [messages, currentGame, onGameUpdate, game.id]);
+    }, [messages, currentGame, onGameUpdate, game.id, settings]);
 
     const isAiGenerated = game.id.startsWith('gen-');
 

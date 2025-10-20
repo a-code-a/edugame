@@ -1,3 +1,6 @@
+import { Settings } from '../types';
+import { SettingsService } from './SettingsService';
+
 const API_KEY = process.env.API_KEY;
 if (!API_KEY) {
   throw new Error("API_KEY environment variable not set");
@@ -12,8 +15,20 @@ It must be fully functional and self-contained.
 Do not use any external libraries or assets. Do not use any markdown formatting like \`\`\`html in your response.
 Your response should be ONLY the HTML code.`;
 
-export async function generateMinigameCode(prompt: string): Promise<string> {
+export async function generateMinigameCode(prompt: string, customSettings?: Settings): Promise<string> {
   try {
+    let systemInstruction = baseSystemInstruction;
+    
+    // Use custom prompt if enabled and valid
+    if (customSettings?.useCustomPrompts && customSettings.mainPrompt) {
+      const validation = SettingsService.validatePrompt(customSettings.mainPrompt);
+      if (validation.isValid) {
+        systemInstruction = customSettings.mainPrompt;
+      } else {
+        console.warn('Custom main prompt is invalid, using default prompt:', validation.errors);
+      }
+    }
+
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -27,7 +42,7 @@ export async function generateMinigameCode(prompt: string): Promise<string> {
         "messages": [
           {
             "role": "system",
-            "content": baseSystemInstruction
+            "content": systemInstruction
           },
           {
             "role": "user",
@@ -49,8 +64,8 @@ export async function generateMinigameCode(prompt: string): Promise<string> {
   }
 }
 
-export async function refineMinigameCode(prompt: string, existingHtml: string): Promise<string> {
-    const refinementInstruction = `You are a web developer tasked with modifying an existing HTML minigame.
+export async function refineMinigameCode(prompt: string, existingHtml: string, customSettings?: Settings): Promise<string> {
+    let refinementInstruction = `You are a web developer tasked with modifying an existing HTML minigame.
 The user will provide you with the current HTML code and a prompt describing the changes they want.
 Your task is to return the **full, updated HTML code** with the requested modifications implemented.
 Maintain the single-file structure (inline CSS and JS).
@@ -62,6 +77,21 @@ Here is the existing code:
 ${existingHtml}
 \`\`\`
 `;
+
+    // Use custom refinement prompt if enabled and valid
+    if (customSettings?.useCustomPrompts && customSettings.refinementPrompt) {
+      const validation = SettingsService.validatePrompt(customSettings.refinementPrompt);
+      if (validation.isValid) {
+        refinementInstruction = customSettings.refinementPrompt + `
+
+Here is the existing code:
+\`\`\`html
+${existingHtml}
+\`\`\``;
+      } else {
+        console.warn('Custom refinement prompt is invalid, using default prompt:', validation.errors);
+      }
+    }
 
     try {
         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {

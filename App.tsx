@@ -1,17 +1,21 @@
 import React, { useState, useMemo } from 'react';
-import { Minigame } from './types';
+import { Minigame, Settings } from './types';
 import { INITIAL_MINIGAMES } from './constants';
-import Header from './components/Header';
-import FilterControls from './components/FilterControls';
-import MinigameGrid from './components/MinigameGrid';
-import GameViewer from './components/GameViewer';
-import VibeCoder from './components/VibeCoder';
+import { SettingsProvider, useSettings } from './Context/SettingsContext';
+import Header from './Components/Header';
+import FilterControls from './Components/FilterControls';
+import MinigameGrid from './Components/MinigameGrid';
+import GameViewer from './Components/GameViewer';
+import VibeCoder from './Components/VibeCoder';
+import SettingsPanel from './Components/SettingsPanel';
 
-function App() {
+function AppContent() {
   const [minigames, setMinigames] = useState<Minigame[]>(INITIAL_MINIGAMES);
   const [selectedGrade, setSelectedGrade] = useState<string>('All');
   const [selectedSubject, setSelectedSubject] = useState<string>('All');
   const [activeGame, setActiveGame] = useState<Minigame | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const { settings, updateSettings } = useSettings();
 
   const filteredGames = useMemo(() => {
     return minigames.filter(game => {
@@ -35,8 +39,8 @@ function App() {
   };
   
   const handleGameUpdate = (gameId: string, newHtmlContent: string) => {
-    setMinigames(prevGames => 
-        prevGames.map(game => 
+    setMinigames(prevGames =>
+        prevGames.map(game =>
             game.id === gameId ? { ...game, htmlContent: newHtmlContent } : game
         )
     );
@@ -54,9 +58,21 @@ function App() {
     setActiveGame(prevGame => prevGame && prevGame.id === gameId ? { ...prevGame, ...updates } : prevGame);
   };
 
+  const handleSettingsClick = () => {
+    setIsSettingsOpen(true);
+  };
+
+  const handleSettingsClose = () => {
+    setIsSettingsOpen(false);
+  };
+
+  const handleSettingsChange = (newSettings: Settings) => {
+    updateSettings(newSettings);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-slate-800 dark:text-slate-200">
-      <Header />
+      <Header onSettingsClick={handleSettingsClick} />
       <main className="max-w-8xl mx-auto py-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 sm:px-0">
           
@@ -85,7 +101,21 @@ function App() {
         </div>
       </main>
       {activeGame && <GameViewer game={activeGame} onClose={handleCloseViewer} onGameUpdate={handleGameUpdate} onGameDetailsUpdate={handleGameDetailsUpdate} />}
+      <SettingsPanel
+        isOpen={isSettingsOpen}
+        onClose={handleSettingsClose}
+        settings={settings}
+        onSettingsChange={handleSettingsChange}
+      />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <SettingsProvider>
+      <AppContent />
+    </SettingsProvider>
   );
 }
 

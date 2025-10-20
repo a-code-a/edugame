@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { generateMinigameCode } from '../Services/geminiService';
 import { Minigame } from '../types';
+import { useSettings } from '../Context/SettingsContext';
 
 interface VibeCoderProps {
   onGameCreated: (game: Minigame) => void;
@@ -17,6 +18,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated }) => {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { settings } = useSettings();
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -26,7 +28,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const htmlContent = await generateMinigameCode(prompt);
+      const htmlContent = await generateMinigameCode(prompt, settings);
       const newGame: Minigame = {
         id: `gen-${Date.now()}`,
         title: prompt.length > 25 ? prompt.substring(0, 22) + '...' : prompt,
