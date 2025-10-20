@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { generateMinigameCode } from '../services/geminiService';
+import { generateMinigameCode } from '../Services/geminiService';
 import { Minigame } from '../types';
 
 interface VibeCoderProps {

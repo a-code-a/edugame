@@ -1,11 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
-
 const API_KEY = process.env.API_KEY;
 if (!API_KEY) {
   throw new Error("API_KEY environment variable not set");
 }
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 const baseSystemInstruction = `You are an expert web developer specializing in creating simple, fun, and educational browser minigames for children.
 Your task is to generate the complete code for a minigame based on the user's prompt.
@@ -17,17 +13,36 @@ Do not use any external libraries or assets. Do not use any markdown formatting 
 Your response should be ONLY the HTML code.`;
 
 export async function generateMinigameCode(prompt: string): Promise<string> {
-  const model = 'gemini-2.5-pro';
-  
   try {
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: prompt,
-      config: {
-        systemInstruction: baseSystemInstruction,
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`,
+        "HTTP-Referer": "http://localhost:3000",
+        "X-Title": "EduGame Creator",
+        "Content-Type": "application/json"
       },
+      body: JSON.stringify({
+        "model": "x-ai/grok-code-fast-1",
+        "messages": [
+          {
+            "role": "system",
+            "content": baseSystemInstruction
+          },
+          {
+            "role": "user",
+            "content": prompt
+          }
+        ]
+      })
     });
-    return response.text;
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
   } catch (error) {
     console.error("Error generating minigame:", error);
     throw new Error("Failed to generate minigame. Please try again.");
@@ -35,8 +50,6 @@ export async function generateMinigameCode(prompt: string): Promise<string> {
 }
 
 export async function refineMinigameCode(prompt: string, existingHtml: string): Promise<string> {
-    const model = 'gemini-2.5-pro';
-
     const refinementInstruction = `You are a web developer tasked with modifying an existing HTML minigame.
 The user will provide you with the current HTML code and a prompt describing the changes they want.
 Your task is to return the **full, updated HTML code** with the requested modifications implemented.
@@ -51,14 +64,35 @@ ${existingHtml}
 `;
 
     try {
-        const response = await ai.models.generateContent({
-            model: model,
-            contents: prompt,
-            config: {
-                systemInstruction: refinementInstruction,
-            },
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "HTTP-Referer": "http://localhost:3000",
+            "X-Title": "EduGame Creator",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            "model": "x-ai/grok-code-fast-1",
+            "messages": [
+              {
+                "role": "system",
+                "content": refinementInstruction
+              },
+              {
+                "role": "user",
+                "content": prompt
+              }
+            ]
+          })
         });
-        return response.text;
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content;
     } catch (error) {
         console.error("Error refining minigame:", error);
         throw new Error("Failed to refine minigame. Please try again.");
