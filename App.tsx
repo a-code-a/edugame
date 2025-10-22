@@ -72,46 +72,51 @@ function AppContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-slate-800 dark:text-slate-200">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 text-slate-800 dark:text-slate-200">
       <Header onSettingsClick={handleSettingsClick} />
-      <main className="max-w-8xl mx-auto py-10 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 px-4 sm:px-0">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
 
-          {/* Left Column: Controls */}
-          <aside className="lg:col-span-3 space-y-8">
+        {/* VibeCoder Section - Centered at top */}
+        <section className="flex justify-center">
+          <div className="w-full max-w-4xl">
             <VibeCoder onGameCreated={handleGameCreated} />
-          </aside>
+          </div>
+        </section>
 
-          {/* Right Column: Game Grid */}
-          <div className="lg:col-span-9">
-             <div className="p-2 relative">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Minigame Library</h2>
-                  <button
-                    onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-                    className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200"
-                    aria-label="Toggle Filters"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                    </svg>
-                  </button>
-                </div>
-                {isFiltersOpen && (
-                  <div className="mb-6 bg-white dark:bg-gray-900/50 border border-slate-200/80 dark:border-slate-800 p-4 rounded-2xl shadow-sm">
-                    <FilterControls
-                        selectedGrade={selectedGrade}
-                        setSelectedGrade={setSelectedGrade}
-                        selectedSubject={selectedSubject}
-                        setSelectedSubject={setSelectedSubject}
-                    />
-                  </div>
-                )}
-                <MinigameGrid games={filteredGames} onPlay={handlePlayGame} />
-             </div>
+        {/* Minigame Library Section */}
+        <section className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h2 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Minigame Library
+            </h2>
+            <button
+              onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800 border border-slate-200 dark:border-slate-700 transition-all duration-200 shadow-sm"
+              aria-label="Toggle Filters"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Filters
+            </button>
           </div>
 
-        </div>
+          {isFiltersOpen && (
+            <div className="bg-white dark:bg-gray-900/50 backdrop-blur-sm border border-slate-200/80 dark:border-slate-800 p-6 rounded-2xl shadow-lg">
+              <FilterControls
+                  selectedGrade={selectedGrade}
+                  setSelectedGrade={setSelectedGrade}
+                  selectedSubject={selectedSubject}
+                  setSelectedSubject={setSelectedSubject}
+              />
+            </div>
+          )}
+
+          <div className="bg-white dark:bg-gray-900/30 backdrop-blur-sm border border-slate-200/50 dark:border-slate-800/50 rounded-3xl p-8 shadow-xl">
+            <MinigameGrid games={filteredGames} onPlay={handlePlayGame} />
+          </div>
+        </section>
+
       </main>
       {activeGame && <GameViewer game={activeGame} onClose={handleCloseViewer} onGameUpdate={handleGameUpdate} onGameDetailsUpdate={handleGameDetailsUpdate} />}
       <SettingsPanel
