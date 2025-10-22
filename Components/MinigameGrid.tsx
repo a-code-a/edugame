@@ -7,21 +7,35 @@ interface MinigameGridProps {
   onPlay: (game: Minigame) => void;
 }
 
+const EmptyState: React.FC = () => (
+  <div className="flex flex-col items-center justify-center gap-4 rounded-[32px] border border-dashed border-slate-300 bg-white/70 px-10 py-16 text-center shadow-inner">
+    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-indigo-100 text-purple-600 shadow">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.4} stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+    </div>
+    <div>
+      <h3 className="text-xl font-semibold text-slate-800">Keine Spiele gefunden</h3>
+      <p className="mt-2 text-sm text-slate-500">
+        Passe deine Filter an oder lasse die KI ein neues Minigame erzeugen.
+      </p>
+    </div>
+    <button
+      type="button"
+      className="rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 hover:shadow-xl"
+    >
+      Ideen mit Vibe Coder starten
+    </button>
+  </div>
+);
+
 const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay }) => {
   if (games.length === 0) {
-    return (
-      <div className="text-center py-16 px-6 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700">
-        <svg className="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path vectorEffect="non-scaling-stroke" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-        </svg>
-        <h3 className="mt-2 text-lg font-medium text-slate-900 dark:text-white">No games found</h3>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Try changing the filters or create a new game with Vibe Coder!</p>
-      </div>
-    );
+    return <EmptyState />;
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
       {games.map((game) => (
         <MinigameCard key={game.id} game={game} onPlay={onPlay} />
       ))}

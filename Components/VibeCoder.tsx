@@ -8,11 +8,17 @@ interface VibeCoderProps {
 }
 
 const WandIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.62-3.385m-1.622 3.385a15.998 15.998 0 01-3.388 1.621m-5.043-.025a15.998 15.998 0 005.043.025z" />
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.998 15.998 0 011.622-3.385m5.043.025a15.998 15.998 0 001.622-3.385m3.388 1.62a15.998 15.998 0 00-1.62-3.385m-1.622 3.385a15.998 15.998 0 01-3.388 1.621m-5.043-.025a15.998 15.998 0 005.043.025z" />
+  </svg>
 );
 
+const quickPrompts = [
+  'Create a memory game to learn the planets.',
+  'Design a spelling challenge for grade 2 students.',
+  'Build a fractions quiz with visual aids.',
+  'Generate a typing speed mini challenge.',
+];
 
 const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated }) => {
   const [prompt, setPrompt] = useState('');
@@ -31,10 +37,10 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated }) => {
       const htmlContent = await generateMinigameCode(prompt, settings);
       const newGame: Minigame = {
         id: `gen-${Date.now()}`,
-        title: prompt.length > 25 ? prompt.substring(0, 22) + '...' : prompt,
+        title: prompt.length > 25 ? `${prompt.substring(0, 22)}...` : prompt,
         description: 'An AI-generated minigame.',
-        grade: 1, // Default grade, can be improved later
-        subject: 'Art', // Default subject
+        grade: 1,
+        subject: 'Art',
         htmlContent,
       };
       onGameCreated(newGame);
@@ -47,37 +53,77 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900/50 border border-slate-200/80 dark:border-slate-800 p-6 rounded-2xl shadow-sm">
-      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Vibe Coder ✨</h3>
-      <p className="text-slate-600 dark:text-slate-400 mb-4 text-sm">Describe a simple game, and our AI will create it for you!</p>
-      <textarea
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        placeholder="e.g., A simple clicker game where a cookie appears in random spots."
-        className="w-full p-3 border border-slate-300 dark:border-slate-700 rounded-lg h-28 bg-white dark:bg-gray-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
-        disabled={isLoading}
-      />
-      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-      <button
-        onClick={handleGenerate}
-        disabled={isLoading}
-        className="mt-4 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-      >
-        {isLoading ? (
-          <>
-             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-             </svg>
-            Generating...
-          </>
-        ) : (
-          <>
-            <WandIcon className="w-5 h-5" />
-            Create Minigame
-          </>
-        )}
-      </button>
+    <div className="relative overflow-hidden rounded-[28px] border border-white/70 bg-gradient-to-br from-white/95 via-[#eef3ff] to-white shadow-xl shadow-indigo-200/40">
+      <div className="absolute -top-16 -right-10 h-56 w-56 rounded-full bg-gradient-to-br from-purple-400/40 to-indigo-400/40 blur-3xl" />
+      <div className="absolute -bottom-24 -left-8 h-64 w-64 rounded-full bg-gradient-to-tr from-sky-200/40 to-purple-300/40 blur-3xl" />
+      <div className="relative z-10 p-8 space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-300/40">
+            <WandIcon className="h-6 w-6" />
+          </div>
+          <div>
+            <h3 className="text-2xl font-bold text-slate-900">Vibe Coder</h3>
+            <p className="text-sm text-slate-500">Beschreibe dein Lernspiel · KI erledigt den Rest</p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl bg-white/70 border border-white/80 px-4 py-3 flex items-center gap-4 shadow-inner">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600 font-semibold">
+            1
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-600">Idee formulieren</p>
+            <p className="text-xs text-slate-400">Fächer, Lernziele, Interaktionen angeben</p>
+          </div>
+        </div>
+
+        <textarea
+          data-role="vibe-prompt"
+          value={prompt}
+          onChange={(event) => setPrompt(event.target.value)}
+          placeholder="z. B. Ein Quiz mit drei Schwierigkeitsstufen, das Bruchteile auf einem Zahlenstrahl visualisiert."
+          className="w-full h-36 resize-none rounded-2xl border border-white/80 bg-white/90 p-4 text-slate-800 shadow-inner focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-200 transition"
+          disabled={isLoading}
+        />
+        {error && <p className="text-sm text-rose-500">{error}</p>}
+
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Schnelle Ideen</p>
+          <div className="flex flex-wrap gap-3">
+            {quickPrompts.map((suggestion) => (
+              <button
+                key={suggestion}
+                type="button"
+                onClick={() => setPrompt(suggestion)}
+                className="rounded-full border border-purple-100 bg-white px-4 py-2 text-sm text-purple-600 hover:bg-purple-50 transition"
+              >
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={handleGenerate}
+          disabled={isLoading}
+          className="w-full inline-flex items-center justify-center gap-3 rounded-[18px] bg-gradient-to-r from-purple-600 to-indigo-600 py-3.5 text-base font-semibold text-white shadow-lg shadow-purple-400/50 transition-transform duration-300 hover:scale-[1.01] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isLoading ? (
+            <>
+              <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              Wird erstellt…
+            </>
+          ) : (
+            <>
+              <WandIcon className="h-5 w-5" />
+              Minigame erzeugen
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 };
