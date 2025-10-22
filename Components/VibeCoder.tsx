@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { generateMinigameCode } from '../Services/geminiService';
+import { generateMinigameCode } from '../Services/openRouterService';
 import { Minigame } from '../types';
 import { useSettings } from '../Context/SettingsContext';
 
