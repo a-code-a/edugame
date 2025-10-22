@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Settings } from '../types';
-import { SettingsService } from '../Services/SettingsService';
-import PromptEditor from './PromptEditor';
+import { Settings } from '../../types';
+import { SettingsService } from '../../Services/SettingsService';
+import PromptEditor from '@/Components/ai/PromptEditor';
 
 interface SettingsPanelProps {
   isOpen: boolean;

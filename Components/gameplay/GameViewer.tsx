@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Minigame } from '../types';
+import { Minigame } from '../../types';
 import GameChat, { ChatMessage } from './GameChat';
-import { refineMinigameCode } from '../Services/openRouterService';
-import { GRADES, SUBJECTS } from '../constants';
-import { useSettings } from '../Context/SettingsContext';
+import { refineMinigameCode } from '../../Services/openRouterService';
+import { GRADES, SUBJECTS } from '../../constants';
+import { useSettings } from '../../Context/SettingsContext';
 
 
 interface GameViewerProps {

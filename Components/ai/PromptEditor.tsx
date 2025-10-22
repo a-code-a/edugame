@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SettingsService } from '../Services/SettingsService';
+import { SettingsService } from '../../Services/SettingsService';
 
 interface PromptEditorProps {
   title: string;

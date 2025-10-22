@@ -1,5 +1,5 @@
 import React from 'react';
-import { Minigame } from '../types';
+import { Minigame } from '../../types';
 
 interface MinigameCardProps {
   game: Minigame;

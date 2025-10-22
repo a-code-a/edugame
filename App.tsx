@@ -2,13 +2,13 @@ import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { Minigame, Settings } from './types';
 import { INITIAL_MINIGAMES } from './constants';
 import { SettingsProvider, useSettings } from './Context/SettingsContext';
-import Header from './Components/Header';
-import Sidebar from './Components/Sidebar';
-import FilterControls from './Components/FilterControls';
-import MinigameGrid from './Components/MinigameGrid';
-import GameViewer from './Components/GameViewer';
-import VibeCoder from './Components/VibeCoder';
-import SettingsPanel from './Components/SettingsPanel';
+import Header from '@/Components/layout/Header';
+import Sidebar from '@/Components/layout/Sidebar';
+import FilterControls from '@/Components/minigames/FilterControls';
+import MinigameGrid from '@/Components/minigames/MinigameGrid';
+import GameViewer from '@/Components/gameplay/GameViewer';
+import VibeCoder from '@/Components/ai/VibeCoder';
+import SettingsPanel from '@/Components/settings/SettingsPanel';
 
 const SparkleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" {...props}>

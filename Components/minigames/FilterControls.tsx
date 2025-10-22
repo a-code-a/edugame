@@ -1,5 +1,5 @@
 import React from 'react';
-import { GRADES, SUBJECTS } from '../constants';
+import { GRADES, SUBJECTS } from '../../constants';
 
 interface FilterControlsProps {
   selectedGrade: string;

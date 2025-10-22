@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { generateMinigameCode } from '../Services/openRouterService';
-import { Minigame } from '../types';
-import { useSettings } from '../Context/SettingsContext';
+import { generateMinigameCode } from '../../Services/openRouterService';
+import { Minigame } from '../../types';
+import { useSettings } from '../../Context/SettingsContext';
 
 interface VibeCoderProps {
   onGameCreated: (game: Minigame) => void;
