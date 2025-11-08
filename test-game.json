@@ -1,9 +1,0 @@
-{
-  "id": "test-game-001",
-  "title": "Test Math Game",
-  "description": "A test game for MongoDB integration",
-  "grade": 5,
-  "subject": "Mathematics",
-  "htmlContent": "<div>Test game content</div>",
-  "userId": "test-user-123"
-}

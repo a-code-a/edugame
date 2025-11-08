@@ -26,9 +26,7 @@ const connectDB = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error('MongoDB connection error:', error);
     process.exit(1);
   }
 };
@@ -59,7 +57,6 @@ app.get('/', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
@@ -72,10 +69,7 @@ app.use((req, res) => {
 const startServer = async () => {
   await connectDB();
   app.listen(PORT, () => {
-    console.log(`🚀 EduGame Server running on port ${PORT}`);
-    console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🔗 MongoDB: Connected to Atlas`);
-    console.log(`📊 API Base URL: http://localhost:${PORT}/api`);
+    // Server started successfully
   });
 };
 
@@ -83,8 +77,6 @@ startServer();
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
-  console.log('\n🛑 Shutting down server...');
   await mongoose.connection.close();
-  console.log('🔌 MongoDB connection closed');
   process.exit(0);
 });

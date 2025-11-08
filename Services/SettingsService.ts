@@ -38,7 +38,6 @@ Your response must be ONLY the new HTML code, without any explanations or markdo
         }
       }
     } catch (error) {
-      console.error('Error loading settings from localStorage:', error);
     }
     return this.getDefaultSettings();
   }
@@ -47,7 +46,6 @@ Your response must be ONLY the new HTML code, without any explanations or markdo
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings));
     } catch (error) {
-      console.error('Error saving settings to localStorage:', error);
     }
   }
 

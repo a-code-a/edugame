@@ -136,11 +136,30 @@ function AppContent() {
     );
   };
 
-  const handleDeleteGame = (gameId: string) => {
-    console.log(`handleDeleteGame called with ID: ${gameId}`);
+  const handleDeleteGame = async (gameId: string) => {
+    const gameToDelete = minigames.find(game => game.id === gameId);
+    
+    if (!gameToDelete) {
+      return;
+    }
+
+    // If game is saved to database, delete from backend first
+    if (gameToDelete.isSavedToDB) {
+      try {
+        const success = await databaseService.deleteGame(gameId);
+        
+        if (!success) {
+          throw new Error('Failed to delete game from database');
+        }
+      } catch (error) {
+        console.error('Error deleting game:', error);
+        alert('Failed to delete game. Please try again.');
+        return; // Don't remove from state if database deletion fails
+      }
+    }
+
+    // Only remove from state if database deletion was successful or game wasn't saved to DB
     setMinigames((prevGames) => {
-      const gameToDelete = prevGames.find(game => game.id === gameId);
-      console.log(`Deleting game: ${gameToDelete?.title} (${gameId})`);
       return prevGames.filter(game => game.id !== gameId);
     });
   };
@@ -149,26 +168,14 @@ function AppContent() {
     const loadSavedGames = async () => {
       try {
         const savedGames = await databaseService.getSavedGames();
-        console.log('Loaded saved games from database:', savedGames.length);
-        console.log('First saved game structure:', savedGames[0]);
-        console.log('Current minigames before update:', minigames.length);
-        
         setMinigames((prevGames) => {
           const existingGameIds = new Set(prevGames.map(game => game.id));
-          console.log('Existing game IDs:', Array.from(existingGameIds));
           
           // Filter out new games from database that don't exist in current state
           const newGamesFromDB = savedGames.filter(dbGame => {
             const hasExistingId = existingGameIds.has(dbGame.id);
-            console.log(`Checking DB game ${dbGame.id} (${dbGame.title}): exists=${hasExistingId}`);
             return !hasExistingId;
           });
-          
-          console.log('New games to add from database:', newGamesFromDB.length);
-          
-          if (newGamesFromDB.length > 0) {
-            console.log('Adding new games:', newGamesFromDB);
-          }
           
           // Update existing games with isSavedToDB flag and add new games from DB
           const updatedExistingGames = prevGames.map(game => ({
@@ -180,7 +187,7 @@ function AppContent() {
           return [...updatedExistingGames, ...newGamesFromDB];
         });
       } catch (error) {
-        console.error('Error loading saved games:', error);
+        // Error loading saved games
       }
     };
 

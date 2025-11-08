@@ -44,14 +44,12 @@ class DatabaseService {
       }
 
       const savedGame = await response.json();
-      console.log('✅ Game saved to database successfully:', savedGame.id);
       
       return {
         success: true,
         game: savedGame,
       };
     } catch (error) {
-      console.error('❌ Error saving game to database:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'An unknown error occurred',
@@ -73,10 +71,8 @@ class DatabaseService {
       }
 
       const games = await response.json();
-      console.log('✅ Retrieved saved games from database:', games.length);
       return games;
     } catch (error) {
-      console.error('❌ Error fetching saved games:', error);
       return [];
     }
   }
@@ -98,14 +94,12 @@ class DatabaseService {
       }
 
       const updatedGame = await response.json();
-      console.log('✅ Game updated in database successfully:', gameId);
       
       return {
         success: true,
         game: updatedGame,
       };
     } catch (error) {
-      console.error('❌ Error updating game in database:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'An unknown error occurred',
@@ -126,10 +120,8 @@ class DatabaseService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      console.log('✅ Game deleted from database successfully:', gameId);
       return true;
     } catch (error) {
-      console.error('❌ Error deleting game from database:', error);
       return false;
     }
   }

@@ -32,7 +32,6 @@ router.post('/', async (req, res) => {
     await game.save();
     res.status(201).json(game);
   } catch (error) {
-    console.error('Error creating game:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -49,7 +48,6 @@ router.get('/', async (req, res) => {
     const games = await Game.find({ userId }).sort({ createdAt: -1 });
     res.json(games);
   } catch (error) {
-    console.error('Error fetching games:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -72,7 +70,6 @@ router.delete('/:id', async (req, res) => {
 
     res.json({ message: 'Game deleted successfully' });
   } catch (error) {
-    console.error('Error deleting game:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -108,7 +105,6 @@ router.put('/:id', async (req, res) => {
 
     res.json(game);
   } catch (error) {
-    console.error('Error updating game:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

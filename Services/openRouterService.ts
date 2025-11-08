@@ -25,7 +25,6 @@ export async function generateMinigameCode(prompt: string, customSettings?: Sett
       if (validation.isValid) {
         systemInstruction = customSettings.mainPrompt;
       } else {
-        console.warn('Custom main prompt is invalid, using default prompt:', validation.errors);
       }
     }
 
@@ -59,7 +58,6 @@ export async function generateMinigameCode(prompt: string, customSettings?: Sett
     const data = await response.json();
     return data.choices[0].message.content;
   } catch (error) {
-    console.error("Error generating minigame:", error);
     throw new Error("Failed to generate minigame. Please try again.");
   }
 }
@@ -89,7 +87,6 @@ Here is the existing code:
 ${existingHtml}
 \`\`\``;
       } else {
-        console.warn('Custom refinement prompt is invalid, using default prompt:', validation.errors);
       }
     }
 
@@ -124,7 +121,6 @@ ${existingHtml}
         const data = await response.json();
         return data.choices[0].message.content;
     } catch (error) {
-        console.error("Error refining minigame:", error);
         throw new Error("Failed to refine minigame. Please try again.");
     }
 }

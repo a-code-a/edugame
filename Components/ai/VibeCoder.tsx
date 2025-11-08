@@ -68,24 +68,18 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
       const result = await databaseService.saveGame(lastCreatedGame);
       
       if (result.success && result.game) {
-        console.log('Game saved to database from VibeCoder:', result.game.id);
         setError(null);
         if (onGameSaved) {
           onGameSaved(result.game);
         }
-        alert('✅ Game saved to database successfully!');
         setLastCreatedGame(null);
       } else {
         const errorMessage = result.error || 'Failed to save game';
         setError(errorMessage);
-        console.error('Save failed:', errorMessage);
-        alert(`❌ Failed to save game: ${errorMessage}`);
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       setError(errorMessage);
-      console.error('Save error:', error);
-      alert(`❌ Error saving game: ${errorMessage}`);
     } finally {
       setIsSaving(false);
     }

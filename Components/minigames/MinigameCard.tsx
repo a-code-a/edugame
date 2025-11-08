@@ -102,12 +102,8 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
   const isAiGenerated = game.id.startsWith('gen-');
   const isSavedToDB = game.isSavedToDB;
 
-  // Debug logging to verify AI-generated game detection
-  console.log(`MinigameCard: ${game.title} (ID: ${game.id}) - isAiGenerated: ${isAiGenerated}, onDelete provided: ${!!onDelete}`);
-
   const handleDelete = () => {
     if (onDelete && isAiGenerated) {
-      console.log(`Deleting game: ${game.id} - ${game.title}`);
       onDelete(game.id);
     }
   };
