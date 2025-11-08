@@ -5,6 +5,7 @@ import MinigameCard from './MinigameCard';
 interface MinigameGridProps {
   games: Minigame[];
   onPlay: (game: Minigame) => void;
+  onDelete?: (gameId: string) => void;
 }
 
 const EmptyState: React.FC = () => (
@@ -29,7 +30,7 @@ const EmptyState: React.FC = () => (
   </div>
 );
 
-const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay }) => {
+const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay, onDelete }) => {
   if (games.length === 0) {
     return <EmptyState />;
   }
@@ -37,7 +38,7 @@ const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay }) => {
   return (
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
       {games.map((game) => (
-        <MinigameCard key={game.id} game={game} onPlay={onPlay} />
+        <MinigameCard key={game.id} game={game} onPlay={onPlay} onDelete={onDelete} />
       ))}
     </div>
   );

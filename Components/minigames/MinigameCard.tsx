@@ -4,6 +4,7 @@ import { Minigame } from '../../types';
 interface MinigameCardProps {
   game: Minigame;
   onPlay: (game: Minigame) => void;
+  onDelete?: (gameId: string) => void;
 }
 
 const PlayIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -97,8 +98,19 @@ const SubjectBadge: React.FC<{ subject: string }> = ({ subject }) => {
   );
 };
 
-const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay }) => {
+const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) => {
   const isAiGenerated = game.id.startsWith('gen-');
+  const isSavedToDB = game.isSavedToDB;
+
+  // Debug logging to verify AI-generated game detection
+  console.log(`MinigameCard: ${game.title} (ID: ${game.id}) - isAiGenerated: ${isAiGenerated}, onDelete provided: ${!!onDelete}`);
+
+  const handleDelete = () => {
+    if (onDelete && isAiGenerated) {
+      console.log(`Deleting game: ${game.id} - ${game.title}`);
+      onDelete(game.id);
+    }
+  };
 
   return (
     <article className="group relative overflow-hidden rounded-[28px] border border-white/60 bg-gradient-to-br from-white via-[#f7f8ff] to-white shadow-lg shadow-slate-200/50 transition transform hover:-translate-y-1 hover:shadow-2xl">
@@ -115,19 +127,42 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay }) => {
             </div>
             <h3 className="mt-3 text-xl font-semibold text-slate-900">{game.title}</h3>
           </div>
-          <SubjectBadge subject={game.subject} />
+          <div className="flex items-center gap-2">
+            <SubjectBadge subject={game.subject} />
+            {isAiGenerated && onDelete && (
+              <button
+                onClick={handleDelete}
+                className="ml-2 inline-flex items-center justify-center h-8 w-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors shadow-sm"
+                title="Spiel löschen"
+                aria-label="Spiel löschen"
+              >
+                <span className="text-lg">🗑️</span>
+              </button>
+            )}
+          </div>
         </div>
 
         <p className="text-sm text-slate-500 leading-relaxed">{game.description}</p>
 
-        {isAiGenerated && (
-          <div className="inline-flex items-center gap-2 rounded-full bg-purple-50 text-purple-600 px-3 py-1 text-xs font-semibold shadow-inner shadow-purple-200/40">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
-              <path d="M9.594.812a.5.5 0 0 1 .812 0l1.25 2.532 2.796.406a.5.5 0 0 1 .277.853l-2.023 1.972.478 2.784a.5.5 0 0 1-.726.527L8 8.732l-2.498 1.313a.5.5 0 0 1-.726-.527l.478-2.784-2.023-1.972a.5.5 0 0 1 .277-.853l2.796-.406L5.594.812a.5.5 0 0 1 .812 0L8 3.344l1.594-2.532ZM6.406 15.188a.5.5 0 0 1 .812 0L8 12.656l.781 2.532a.5.5 0 0 1 .812 0l.443.894a.5.5 0 0 1-.363.633l-1.42.355a.5.5 0 0 1-.496 0l-1.42-.355a.5.5 0 0 1-.363-.633l.443-.894Z" />
-            </svg>
-            EduGame AI
-          </div>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {isAiGenerated && (
+            <div className="inline-flex items-center gap-2 rounded-full bg-purple-50 text-purple-600 px-3 py-1 text-xs font-semibold shadow-inner shadow-purple-200/40">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
+                <path d="M9.594.812a.5.5 0 0 1 .812 0l1.25 2.532 2.796.406a.5.5 0 0 1 .277.853l-2.023 1.972.478 2.784a.5.5 0 0 1-.726.527L8 8.732l-2.498 1.313a.5.5 0 0 1-.726-.527l.478-2.784-2.023-1.972a.5.5 0 0 1 .277-.853l2.796-.406L5.594.812a.5.5 0 0 1 .812 0L8 3.344l1.594-2.532ZM6.406 15.188a.5.5 0 0 1 .812 0L8 12.656l.781 2.532a.5.5 0 0 1 .812 0l.443.894a.5.5 0 0 1-.363.633l-1.42.355a.5.5 0 0 1-.496 0l-1.42-.355a.5.5 0 0 1-.363-.633l.443-.894Z" />
+              </svg>
+              EduGame AI
+            </div>
+          )}
+          
+          {isSavedToDB && (
+            <div className="inline-flex items-center gap-2 rounded-full bg-green-50 text-green-600 px-3 py-1 text-xs font-semibold shadow-inner shadow-green-200/40">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+              </svg>
+              Database
+            </div>
+          )}
+        </div>
 
         <div className="mt-auto">
           <button

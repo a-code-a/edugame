@@ -6,6 +6,10 @@ export interface Minigame {
   grade: number;
   subject: string;
   htmlContent: string;
+  isSavedToDB?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  userId?: string;
 }
 
 export interface Settings {

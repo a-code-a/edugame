@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Minigame, Settings } from './types';
 import { INITIAL_MINIGAMES } from './constants';
 import { SettingsProvider, useSettings } from './Context/SettingsContext';
+import DatabaseService from './Services/DatabaseService';
 import Header from '@/Components/layout/Header';
 import Sidebar from '@/Components/layout/Sidebar';
 import FilterControls from '@/Components/minigames/FilterControls';
@@ -75,6 +76,7 @@ function AppContent() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { settings, updateSettings } = useSettings();
   const vibeCoderRef = useRef<HTMLDivElement>(null);
+  const databaseService = DatabaseService.getInstance();
 
   const filteredGames = useMemo(() => {
     return minigames
@@ -122,6 +124,68 @@ function AppContent() {
       prevGame && prevGame.id === gameId ? { ...prevGame, ...updates } : prevGame,
     );
   };
+
+  const handleGameSaved = (savedGame: Minigame) => {
+    setMinigames((prevGames) =>
+      prevGames.map((game) =>
+        game.id === savedGame.id ? { ...game, isSavedToDB: true } : game
+      ),
+    );
+    setActiveGame((prevGame) =>
+      prevGame && prevGame.id === savedGame.id ? { ...prevGame, isSavedToDB: true } : prevGame
+    );
+  };
+
+  const handleDeleteGame = (gameId: string) => {
+    console.log(`handleDeleteGame called with ID: ${gameId}`);
+    setMinigames((prevGames) => {
+      const gameToDelete = prevGames.find(game => game.id === gameId);
+      console.log(`Deleting game: ${gameToDelete?.title} (${gameId})`);
+      return prevGames.filter(game => game.id !== gameId);
+    });
+  };
+
+  useEffect(() => {
+    const loadSavedGames = async () => {
+      try {
+        const savedGames = await databaseService.getSavedGames();
+        console.log('Loaded saved games from database:', savedGames.length);
+        console.log('First saved game structure:', savedGames[0]);
+        console.log('Current minigames before update:', minigames.length);
+        
+        setMinigames((prevGames) => {
+          const existingGameIds = new Set(prevGames.map(game => game.id));
+          console.log('Existing game IDs:', Array.from(existingGameIds));
+          
+          // Filter out new games from database that don't exist in current state
+          const newGamesFromDB = savedGames.filter(dbGame => {
+            const hasExistingId = existingGameIds.has(dbGame.id);
+            console.log(`Checking DB game ${dbGame.id} (${dbGame.title}): exists=${hasExistingId}`);
+            return !hasExistingId;
+          });
+          
+          console.log('New games to add from database:', newGamesFromDB.length);
+          
+          if (newGamesFromDB.length > 0) {
+            console.log('Adding new games:', newGamesFromDB);
+          }
+          
+          // Update existing games with isSavedToDB flag and add new games from DB
+          const updatedExistingGames = prevGames.map(game => ({
+            ...game,
+            isSavedToDB: savedGames.some(dbGame => dbGame.id === game.id)
+          }));
+          
+          // Combine updated existing games with new games from database
+          return [...updatedExistingGames, ...newGamesFromDB];
+        });
+      } catch (error) {
+        console.error('Error loading saved games:', error);
+      }
+    };
+
+    loadSavedGames();
+  }, []);
 
   const handleSettingsChange = (newSettings: Settings) => {
     updateSettings(newSettings);
@@ -236,7 +300,7 @@ function AppContent() {
 
             <section ref={vibeCoderRef} className="grid lg:grid-cols-[1.25fr_minmax(0,1fr)] gap-10">
               <div className="bg-white/80 rounded-[30px] border border-white shadow-xl shadow-purple-100/50 p-8">
-                <VibeCoder onGameCreated={handleGameCreated} />
+                <VibeCoder onGameCreated={handleGameCreated} onGameSaved={handleGameSaved} />
               </div>
               <div className="bg-white/70 rounded-[30px] border border-white shadow-xl shadow-indigo-100/40 p-8 space-y-6">
                 <h3 className="text-lg font-semibold text-slate-800">Schnellauswahl · Jahrgang</h3>
@@ -295,7 +359,7 @@ function AppContent() {
               </div>
 
               <div className="bg-white/90 rounded-[30px] border border-white shadow-[0_35px_90px_-60px_rgba(70,60,125,0.7)] p-8">
-                <MinigameGrid games={filteredGames} onPlay={handlePlayGame} />
+                <MinigameGrid games={filteredGames} onPlay={handlePlayGame} onDelete={handleDeleteGame} />
               </div>
             </section>
           </div>
@@ -306,6 +370,7 @@ function AppContent() {
             onClose={handleCloseViewer}
             onGameUpdate={handleGameUpdate}
             onGameDetailsUpdate={handleGameDetailsUpdate}
+            onGameSaved={handleGameSaved}
           />
         )}
         <SettingsPanel
