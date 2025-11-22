@@ -91,3 +91,51 @@ ${existingHtml}
         throw new Error("Failed to refine minigame. Please try again.");
     }
 }
+
+export async function generateGameDescription(prompt: string): Promise<string> {
+    try {
+        const descriptionPrompt = `You are a creative educational content writer. Based on the following game concept, write a concise, engaging description (2-3 sentences maximum) that explains what the game does and what educational concepts it teaches.
+
+Game concept: ${prompt}
+
+Write only the description, nothing else. Make it educational, exciting, and suitable for students maximum 20 Words.`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-3-pro-preview",
+            contents: descriptionPrompt,
+        });
+
+        // Extract only text parts to avoid thought signature warnings
+        const textParts = response.candidates?.[0]?.content?.parts?.filter(part => 'text' in part) || [];
+        const text = textParts.map(part => part.text).join('').trim();
+        return text || response.text.trim();
+    } catch (error) {
+        console.error("Gemini API error generating description:", error);
+        // Return a fallback description if AI generation fails
+        return "An AI-generated educational minigame designed to make learning fun and interactive.";
+    }
+}
+
+export async function generateGameTitle(prompt: string): Promise<string> {
+    try {
+        const titlePrompt = `You are a creative content writer. Based on the following game concept, create a short, catchy title (maximum 5 words) that captures the essence of the game.
+
+Game concept: ${prompt}
+
+Write only the title, nothing else. Make it exciting, clear, and suitable for students. Do not use quotes or special formatting.`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-3-pro-preview",
+            contents: titlePrompt,
+        });
+
+        // Extract only text parts to avoid thought signature warnings
+        const textParts = response.candidates?.[0]?.content?.parts?.filter(part => 'text' in part) || [];
+        const text = textParts.map(part => part.text).join('').trim();
+        return text || response.text.trim();
+    } catch (error) {
+        console.error("Gemini API error generating title:", error);
+        // Return a fallback title if AI generation fails
+        return prompt.length > 25 ? `${prompt.substring(0, 22)}...` : prompt;
+    }
+}

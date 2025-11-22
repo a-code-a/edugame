@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { generateMinigameCode } from '../../Services/geminiService';
+import { generateMinigameCode, generateGameDescription, generateGameTitle } from '../../Services/geminiService';
 import DatabaseService from '../../Services/DatabaseService';
 import { Minigame } from '../../types';
 import { useSettings } from '../../Context/SettingsContext';
@@ -39,11 +39,17 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
     setIsLoading(true);
     setError(null);
     try {
-      const htmlContent = await generateMinigameCode(prompt, settings);
+      // Generate game code, description, and title in parallel
+      const [htmlContent, aiDescription, aiTitle] = await Promise.all([
+        generateMinigameCode(prompt, settings),
+        generateGameDescription(prompt),
+        generateGameTitle(prompt)
+      ]);
+
       const newGame: Minigame = {
         id: `gen-${Date.now()}`,
-        title: prompt.length > 25 ? `${prompt.substring(0, 22)}...` : prompt,
-        description: 'An AI-generated minigame.',
+        title: aiTitle,
+        description: aiDescription,
         grade: 1,
         subject: 'Art',
         htmlContent,
@@ -114,7 +120,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
           data-role="vibe-prompt"
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
-          placeholder="z. B. Ein Quiz mit drei Schwierigkeitsstufen, das Bruchteile auf einem Zahlenstrahl visualisiert."
+          placeholder="z. B. Ein Quiz mit drei Schwierigkeitsstufen, das Bruchteile auf einem Zahlenstrahl visualisiert."
           className="w-full h-36 resize-none rounded-2xl border border-white/80 bg-white/90 p-4 text-slate-800 shadow-inner focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-200 transition"
           disabled={isLoading}
         />
