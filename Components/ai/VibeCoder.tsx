@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { generateMinigameCode } from '../../Services/openRouterService';
+import { generateMinigameCode } from '../../Services/geminiService';
 import DatabaseService from '../../Services/DatabaseService';
 import { Minigame } from '../../types';
 import { useSettings } from '../../Context/SettingsContext';
@@ -60,13 +60,13 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
 
   const handleSaveToDatabase = async () => {
     if (!lastCreatedGame) return;
-    
+
     setIsSaving(true);
     setError(null);
-    
+
     try {
       const result = await databaseService.saveGame(lastCreatedGame);
-      
+
       if (result.success && result.game) {
         setError(null);
         if (onGameSaved) {
@@ -156,7 +156,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
             </>
           )}
         </button>
-        
+
         {lastCreatedGame && (
           <div className="mt-6 pt-6 border-t border-slate-200/60">
             <div className="flex items-center gap-3 mb-4">
@@ -170,7 +170,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
                 <p className="text-xs text-slate-500">Save it to your database to access it later</p>
               </div>
             </div>
-            
+
             <button
               onClick={handleSaveToDatabase}
               disabled={isSaving}
