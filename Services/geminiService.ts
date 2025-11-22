@@ -15,8 +15,13 @@ The entire game must be contained within a single HTML file.
 This means all CSS must be inside a <style> tag in the <head>, and all JavaScript must be inside a <script> tag at the end of the <body>.
 The game should be visually appealing, using bright colors and clear fonts.
 It must be fully functional and self-contained.
-Do not use any external libraries or assets. Do not use any markdown formatting in your response.
-Your response should be ONLY the HTML code.`;
+Do not use any external libraries or assets.
+
+CRITICAL: Your response must be ONLY the raw HTML code. 
+DO NOT wrap your response in markdown code fences.
+DO NOT start with \`\`\`html
+DO NOT use any markdown formatting whatsoever.
+Start your response directly with <!DOCTYPE html> and nothing else before it.`;
 
 export async function generateMinigameCode(prompt: string, customSettings?: Settings): Promise<string> {
     try {
@@ -32,7 +37,7 @@ export async function generateMinigameCode(prompt: string, customSettings?: Sett
 
         const response = await ai.models.generateContent({
             model: "gemini-3-pro-preview",
-            contents: `${systemInstruction}\n\nUser request: ${prompt}`,
+            contents: `${systemInstruction}\\n\\nUser request: ${prompt}`,
         });
 
         return response.text;
@@ -48,7 +53,12 @@ The user will provide you with the current HTML code and a prompt describing the
 Your task is to return the **full, updated HTML code** with the requested modifications implemented.
 Maintain the single-file structure (inline CSS and JS).
 Ensure the game remains fully functional.
-Your response must be ONLY the new HTML code, without any explanations or markdown.
+
+CRITICAL: Your response must be ONLY the raw HTML code.
+DO NOT wrap your response in markdown code fences.
+DO NOT start with \`\`\`html
+DO NOT use any markdown formatting whatsoever.
+Start your response directly with <!DOCTYPE html> and nothing else before it.
 
 Here is the existing code:
 \`\`\`html
@@ -60,7 +70,7 @@ ${existingHtml}
     if (customSettings?.useCustomPrompts && customSettings.refinementPrompt) {
         const validation = SettingsService.validatePrompt(customSettings.refinementPrompt);
         if (validation.isValid) {
-            refinementInstruction = customSettings.refinementPrompt + `
+            refinementInstruction = `${customSettings.refinementPrompt}
 
 Here is the existing code:
 \`\`\`html  
@@ -72,7 +82,7 @@ ${existingHtml}
     try {
         const response = await ai.models.generateContent({
             model: "gemini-3-pro-preview",
-            contents: `${refinementInstruction}\n\nUser request: ${prompt}`,
+            contents: `${refinementInstruction}\\n\\nUser request: ${prompt}`,
         });
 
         return response.text;
