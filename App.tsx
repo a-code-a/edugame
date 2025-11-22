@@ -92,14 +92,14 @@ function AppContent() {
     // If game is saved to database, delete from backend first
     if (gameToDelete.isSavedToDB) {
       try {
-        const success = await databaseService.deleteGame(gameId);
+        const result = await databaseService.deleteGame(gameId);
 
-        if (!success) {
-          throw new Error('Failed to delete game from database');
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to delete game from database');
         }
       } catch (error) {
         console.error('Error deleting game:', error);
-        alert('Failed to delete game. Please try again.');
+        alert(`Failed to delete game: ${error instanceof Error ? error.message : 'Unknown error'}`);
         return; // Don't remove from state if database deletion fails
       }
     }

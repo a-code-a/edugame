@@ -110,8 +110,9 @@ class DatabaseService {
     }
   }
 
-  public async deleteGame(gameId: string): Promise<boolean> {
+  public async deleteGame(gameId: string): Promise<{ success: boolean; error?: string }> {
     try {
+      console.log(`Attempting to delete game ${gameId} from ${API_BASE_URL}/games/${gameId}`);
       const response = await fetch(`${API_BASE_URL}/games/${gameId}`, {
         method: 'DELETE',
         headers: {
@@ -120,12 +121,19 @@ class DatabaseService {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        const errorMessage = errorData.error || `HTTP error! status: ${response.status}`;
+        console.error('Delete game failed:', errorMessage);
+        throw new Error(errorMessage);
       }
 
-      return true;
+      return { success: true };
     } catch (error) {
-      return false;
+      console.error('Error in deleteGame service:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unknown error occurred'
+      };
     }
   }
 
