@@ -25,8 +25,12 @@ const connectDB = async () => {
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      dbName: 'edugame'
     });
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    console.log(`Database Name: ${conn.connection.name}`);
   } catch (error) {
+    console.error(`Error: ${error.message}`);
     process.exit(1);
   }
 };
@@ -36,8 +40,8 @@ app.use('/api/games', gamesRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
@@ -45,7 +49,7 @@ app.get('/api/health', (req, res) => {
 
 // Root endpoint
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'EduGame API Server',
     version: '1.0.0',
     endpoints: {
