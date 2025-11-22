@@ -15,13 +15,6 @@ const WandIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
-const quickPrompts = [
-  'Create a memory game to learn the planets.',
-  'Design a spelling challenge for grade 2 students.',
-  'Build a fractions quiz with visual aids.',
-  'Generate a typing speed mini challenge.',
-];
-
 const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -124,25 +117,6 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
               {error}
             </div>
           )}
-
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Schnellvorschläge
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {quickPrompts.map((suggestion) => (
-                <button
-                  key={suggestion}
-                  type="button"
-                  onClick={() => setPrompt(suggestion)}
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700 transition-colors"
-                  disabled={isLoading}
-                >
-                  {suggestion}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         <button
