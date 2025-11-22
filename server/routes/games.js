@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Game = require('../models/Game');
 
-// POST /api/games - Save a new game
+// POST /api/games - Save a new game or update existing one
 router.post('/', async (req, res) => {
   try {
     const { id, title, description, grade, subject, htmlContent, userId } = req.body;
@@ -12,26 +12,29 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-    // Check if game with this ID already exists
-    const existingGame = await Game.findOne({ id });
-    if (existingGame) {
-      return res.status(409).json({ error: 'Game with this ID already exists' });
-    }
+    // Use findOneAndUpdate with upsert to either update or create
+    const game = await Game.findOneAndUpdate(
+      { id, userId }, // Find criteria
+      {
+        id,
+        title,
+        description,
+        grade,
+        subject,
+        htmlContent,
+        userId,
+        updatedAt: Date.now()
+      },
+      {
+        new: true, // Return the updated document
+        upsert: true, // Create if doesn't exist
+        runValidators: true // Run schema validations
+      }
+    );
 
-    // Create new game
-    const game = new Game({
-      id,
-      title,
-      description,
-      grade,
-      subject,
-      htmlContent,
-      userId
-    });
-
-    await game.save();
-    res.status(201).json(game);
+    res.status(200).json(game);
   } catch (error) {
+    console.error('Error saving game:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

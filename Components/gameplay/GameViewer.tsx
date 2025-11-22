@@ -105,9 +105,9 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
         } finally {
             setIsSaving(false);
         }
-    }, [currentGame, onGameSaved]);
+    }, [currentGame, onGameSaved, databaseService]);
 
-    const canBeSaved = isAiGenerated && !game.isSavedToDB;
+    const canBeSaved = isAiGenerated;
 
     return (
         <div
@@ -168,13 +168,13 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
                                         <path fillRule="evenodd" d="M17.5 3.5A2.5 2.5 0 0 0 15 6v1.5a.5.5 0 0 1-1 0V6a3.5 3.5 0 1 1 7 0v3.5a5.5 5.5 0 0 1-4.5 5.397V20a.5.5 0 0 1-1 0v-5.103A5.5 5.5 0 0 1 11 9.5V6A5 5 0 0 0 6 6v9a6.5 6.5 0 0 0 5.5 6.397V20a.5.5 0 0 1-1 0v-1.603A7.5 7.5 0 0 1 5 15V6a7 7 0 0 1 14 0v3.5a2.5 2.5 0 0 0 2.5-2.5V6a2.5 2.5 0 0 0-2.5-2.5h-1a.5.5 0 0 1 0-1h1A3.5 3.5 0 0 1 23 6v3.5A3.5 3.5 0 0 1 19.5 13H19a.5.5 0 0 1 0-1h.5A2.5 2.5 0 0 0 22 9.5V6a2.5 2.5 0 0 0-2.5-2.5h-1a.5.5 0 0 1 0-1h1ZM8.5 6A3.5 3.5 0 0 1 12 9.5v5A4.5 4.5 0 0 1 7.5 19h-1a.5.5 0 0 1 0-1h1A3.5 3.5 0 0 0 11 14.5v-5A2.5 2.5 0 0 0 8.5 7h-1a.5.5 0 0 1 0-1h1Z" clipRule="evenodd" />
                                     </svg>
-                                    Save to DB
+                                    {game.isSavedToDB ? 'Update DB' : 'Save to DB'}
                                 </>
                             )}
                         </button>
                     )}
 
-                    {game.isSavedToDB && (
+                    {game.isSavedToDB && !canBeSaved && (
                         <div className="inline-flex items-center gap-2 rounded-full bg-green-50 text-green-600 px-3 py-1 text-xs font-semibold shadow-inner shadow-green-200/40">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
                                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
