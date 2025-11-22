@@ -1,0 +1,47 @@
+# Render Blueprint for EduGame
+# This file configures both frontend and backend services
+
+services:
+  # Backend API Server
+  - type: web
+    name: edugame-backend
+    runtime: node
+    region: frankfurt # Change to your preferred region
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false # Set this in Render dashboard
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: edugame-frontend
+          property: url
+    healthCheckPath: /api/health
+
+  # Frontend Static Site
+  - type: web
+    name: edugame-frontend
+    runtime: node
+    region: frankfurt # Change to your preferred region
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run preview -- --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: edugame-backend
+          property: url
+      - key: VITE_GEMINI_API_KEY
+        sync: false # Set this in Render dashboard
+      - key: OPENROUTER_API_KEY
+        sync: false # Set this in Render dashboard

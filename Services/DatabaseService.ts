@@ -1,6 +1,9 @@
 import { Minigame } from '../types';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+// Use environment variable in production, localhost in development
+const API_BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/api`
+  : 'http://localhost:5000/api';
 const USER_ID = 'user-123'; // In a real app, this would come from authentication
 
 interface SaveGameResponse {
@@ -44,7 +47,7 @@ class DatabaseService {
       }
 
       const savedGame = await response.json();
-      
+
       return {
         success: true,
         game: savedGame,
@@ -94,7 +97,7 @@ class DatabaseService {
       }
 
       const updatedGame = await response.json();
-      
+
       return {
         success: true,
         game: updatedGame,

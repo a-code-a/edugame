@@ -10,11 +10,27 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Middleware - CORS configuration for dev and production
+const allowedOrigins = [
+  'http://localhost:3000', // Local development
+  'http://localhost:5173', // Vite default port
+  process.env.FRONTEND_URL // Production frontend URL from Render
+].filter(Boolean);
+
 app.use(cors({
-  origin: 'http://localhost:3000', // React default port
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'userId']
+  allowedHeaders: ['Content-Type', 'userId'],
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -73,7 +89,7 @@ app.use((req, res) => {
 const startServer = async () => {
   await connectDB();
   app.listen(PORT, () => {
-    // Server started successfully
+    console.log(`Server running on port ${PORT}`);
   });
 };
 
