@@ -138,7 +138,7 @@ function AppContent() {
 
   const handleDeleteGame = async (gameId: string) => {
     const gameToDelete = minigames.find(game => game.id === gameId);
-    
+
     if (!gameToDelete) {
       return;
     }
@@ -147,7 +147,7 @@ function AppContent() {
     if (gameToDelete.isSavedToDB) {
       try {
         const success = await databaseService.deleteGame(gameId);
-        
+
         if (!success) {
           throw new Error('Failed to delete game from database');
         }
@@ -170,19 +170,19 @@ function AppContent() {
         const savedGames = await databaseService.getSavedGames();
         setMinigames((prevGames) => {
           const existingGameIds = new Set(prevGames.map(game => game.id));
-          
+
           // Filter out new games from database that don't exist in current state
           const newGamesFromDB = savedGames.filter(dbGame => {
             const hasExistingId = existingGameIds.has(dbGame.id);
             return !hasExistingId;
           });
-          
+
           // Update existing games with isSavedToDB flag and add new games from DB
           const updatedExistingGames = prevGames.map(game => ({
             ...game,
             isSavedToDB: savedGames.some(dbGame => dbGame.id === game.id)
           }));
-          
+
           // Combine updated existing games with new games from database
           return [...updatedExistingGames, ...newGamesFromDB];
         });
@@ -246,11 +246,10 @@ function AppContent() {
                         key={item.id}
                         type="button"
                         onClick={() => setActiveHeroFilter(item.id)}
-                        className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                          activeHeroFilter === item.id
-                            ? 'bg-purple-600 text-white shadow-lg shadow-purple-400/40'
-                            : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow'
-                        }`}
+                        className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${activeHeroFilter === item.id
+                          ? 'bg-purple-600 text-white shadow-lg shadow-purple-400/40'
+                          : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow'
+                          }`}
                       >
                         {item.label}
                       </button>
@@ -289,11 +288,10 @@ function AppContent() {
                       key={shortcut.id}
                       type="button"
                       onClick={() => setSelectedSubject(shortcut.value)}
-                      className={`flex items-center gap-3 rounded-2xl px-5 py-3 text-sm font-semibold shadow-sm transition-all duration-200 ${
-                        selectedSubject === shortcut.value
+                      className={`flex items-center gap-3 rounded-2xl px-5 py-3 text-sm font-semibold shadow-sm transition-all duration-200 ${selectedSubject === shortcut.value
                           ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-400/50'
                           : `bg-gradient-to-r ${shortcut.gradient} text-slate-700 hover:shadow-md`
-                      }`}
+                        }`}
                     >
                       <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/70 text-slate-600">
                         {SubjectIcons[shortcut.value] ?? SubjectIcons.All}
@@ -305,31 +303,9 @@ function AppContent() {
               </div>
             </section>
 
-            <section ref={vibeCoderRef} className="grid lg:grid-cols-[1.25fr_minmax(0,1fr)] gap-10">
+            <section ref={vibeCoderRef} className="max-w-4xl mx-auto">
               <div className="bg-white/80 rounded-[30px] border border-white shadow-xl shadow-purple-100/50 p-8">
                 <VibeCoder onGameCreated={handleGameCreated} onGameSaved={handleGameSaved} />
-              </div>
-              <div className="bg-white/70 rounded-[30px] border border-white shadow-xl shadow-indigo-100/40 p-8 space-y-6">
-                <h3 className="text-lg font-semibold text-slate-800">Schnellauswahl · Jahrgang</h3>
-                <div className="flex flex-wrap gap-3">
-                  {['All', '1', '2', '3', '4', '5', '6'].map((grade) => (
-                    <button
-                      key={grade}
-                      type="button"
-                      onClick={() => setSelectedGrade(grade)}
-                      className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                        selectedGrade === grade
-                          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-400/50'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                      }`}
-                    >
-                      {grade === 'All' ? 'Alle Stufen' : `Klasse ${grade}`}
-                    </button>
-                  ))}
-                </div>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  Nutze die Stufen oder wähle ein Fach, um sofort passende Lernspiele zu finden. Du kannst die Filter jederzeit in der Bibliothek weiter verfeinern.
-                </p>
               </div>
             </section>
 
