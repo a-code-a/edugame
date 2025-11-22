@@ -72,27 +72,40 @@ function AppContent() {
   };
 
   const handleGameSaved = (savedGame: Minigame) => {
-    setMinigames((prevGames) =>
-      prevGames.map((game) =>
-        game.id === savedGame.id ? { ...game, isSavedToDB: true } : game
-      ),
-    );
+    console.log('App: handleGameSaved called with:', savedGame);
+    setMinigames((prevGames) => {
+      const updated = prevGames.map((game) => {
+        if (game.id === savedGame.id) {
+          console.log(`App: Marking game ${game.id} as saved`);
+          return { ...game, isSavedToDB: true };
+        }
+        return game;
+      });
+      return updated;
+    });
     setActiveGame((prevGame) =>
       prevGame && prevGame.id === savedGame.id ? { ...prevGame, isSavedToDB: true } : prevGame
     );
   };
 
   const handleDeleteGame = async (gameId: string) => {
+    console.log('App: handleDeleteGame called for:', gameId);
     const gameToDelete = minigames.find(game => game.id === gameId);
 
     if (!gameToDelete) {
+      console.error('App: Game not found for deletion:', gameId);
       return;
     }
 
+    console.log('App: Game to delete:', gameToDelete);
+    console.log('App: isSavedToDB:', gameToDelete.isSavedToDB);
+
     // If game is saved to database, delete from backend first
     if (gameToDelete.isSavedToDB) {
+      console.log('App: Deleting from backend...');
       try {
         const result = await databaseService.deleteGame(gameId);
+        console.log('App: Backend delete result:', result);
 
         if (!result.success) {
           throw new Error(result.error || 'Failed to delete game from database');
@@ -102,6 +115,8 @@ function AppContent() {
         alert(`Failed to delete game: ${error instanceof Error ? error.message : 'Unknown error'}`);
         return; // Don't remove from state if database deletion fails
       }
+    } else {
+      console.log('App: Game not saved to DB, skipping backend delete');
     }
 
     // Only remove from state if database deletion was successful or game wasn't saved to DB
