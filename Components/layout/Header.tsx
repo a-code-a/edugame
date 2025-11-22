@@ -42,17 +42,6 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick, onMenuToggle }) => {
               <h1 className="text-xl font-bold text-slate-900">Creator Workspace</h1>
             </div>
           </div>
-          <nav className="hidden lg:flex items-center gap-2 ml-8 rounded-full bg-white/60 border border-white/70 px-2 py-1">
-            {['Startseite', 'Projekte', 'Vorlagen', 'AI Studio'].map((item) => (
-              <button
-                key={item}
-                type="button"
-                className="px-4 py-1.5 text-sm font-medium text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
-              >
-                {item}
-              </button>
-            ))}
-          </nav>
         </div>
         <div className="flex items-center gap-3">
           <button
