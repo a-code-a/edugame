@@ -35,15 +35,43 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
 
     useEffect(() => {
         setIsShowing(true);
+
         const handleEsc = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 onClose();
             }
         };
+
+        // Prevent default behavior for arrow keys and common game keys to stop page scrolling
+        const preventDefaultKeyHandler = (event: KeyboardEvent) => {
+            const gameKeys = [
+                'ArrowUp',
+                'ArrowDown',
+                'ArrowLeft',
+                'ArrowRight',
+                'Space',
+                ' ', // Space key alternative
+                'w', 'W',
+                'a', 'A',
+                's', 'S',
+                'd', 'D',
+                'i', 'I',
+                'j', 'J',
+                'k', 'K',
+                'l', 'L'
+            ];
+
+            if (gameKeys.includes(event.key)) {
+                event.preventDefault();
+            }
+        };
+
         window.addEventListener('keydown', handleEsc);
+        window.addEventListener('keydown', preventDefaultKeyHandler);
 
         return () => {
             window.removeEventListener('keydown', handleEsc);
+            window.removeEventListener('keydown', preventDefaultKeyHandler);
         };
     }, [onClose]);
 
