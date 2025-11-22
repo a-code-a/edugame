@@ -9,6 +9,11 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
+    preview: {
+      port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
+      host: '0.0.0.0',
+      strictPort: true,
+    },
     plugins: [react()],
     define: {
       'process.env.API_KEY': JSON.stringify(env.OPENROUTER_API_KEY),
