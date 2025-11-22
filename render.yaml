@@ -19,10 +19,7 @@ services:
       - key: MONGODB_URI
         sync: false # Set this in Render dashboard
       - key: FRONTEND_URL
-        fromService:
-          type: web
-          name: edugame-frontend
-          property: url
+        sync: false # Set this manually after frontend is deployed
     healthCheckPath: /api/health
 
   # Frontend Static Site
@@ -37,10 +34,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: edugame-backend
-          property: url
+        sync: false # Set this manually after backend is deployed
       - key: VITE_GEMINI_API_KEY
         sync: false # Set this in Render dashboard
       - key: OPENROUTER_API_KEY
