@@ -74,16 +74,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
   return (
     <>
       <div
-        className={`fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
-          isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
         onClick={onCloseMobile}
         aria-hidden="true"
       />
       <aside
-        className={`fixed lg:static z-50 inset-y-0 left-0 flex h-full w-72 flex-col bg-gradient-to-b from-white/90 via-white/80 to-white/60 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-900/80 border-r border-white/40 dark:border-slate-800/80 shadow-xl backdrop-blur-2xl transition-transform duration-300 ${
-          isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+        className={`fixed lg:static z-50 inset-y-0 left-0 flex h-full w-72 flex-col bg-gradient-to-b from-white/90 via-white/80 to-white/60 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-900/80 border-r border-white/40 dark:border-slate-800/80 shadow-xl backdrop-blur-2xl transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          }`}
         aria-label="Main navigation"
       >
         <div className="flex items-center justify-between px-6 pt-6 pb-4">
@@ -140,13 +138,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
             <IconButton label="More">
               <IconMore className="h-5 w-5" />
             </IconButton>
-          </div>
-
-          <div className="mt-8 rounded-2xl border border-dashed border-purple-300/60 dark:border-purple-500/40 bg-purple-50/70 dark:bg-purple-900/20 px-4 py-5 text-sm text-purple-700 dark:text-purple-200 shadow-sm">
-            <p className="font-semibold mb-2">Star important blueprints ⭐</p>
-            <p className="leading-snug">
-              Keep your favourite minigames one tap away by starring them in the library.
-            </p>
           </div>
 
           <div className="mt-8">
