@@ -106,6 +106,12 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
               data-role="vibe-prompt"
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                  event.preventDefault();
+                  handleGenerate();
+                }
+              }}
               placeholder="z. B. Ein Quiz mit drei Schwierigkeitsstufen, das Bruchteile auf einem Zahlenstrahl visualisiert."
               className="w-full h-32 resize-none rounded-xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-200/50 transition"
               disabled={isLoading}

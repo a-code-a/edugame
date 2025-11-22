@@ -117,7 +117,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
         >
             <div className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm" onClick={onClose}></div>
 
-            <div className={`relative w-full max-w-7xl h-[90vh] flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-2xl transition-all duration-300 ${isShowing ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+            <div className={`relative w-full max-w-[95vw] h-[95vh] flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-2xl transition-all duration-300 ${isShowing ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                 <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700 rounded-t-2xl flex-shrink-0">
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white flex-shrink-0 pr-4">{game.title}</h2>
 
