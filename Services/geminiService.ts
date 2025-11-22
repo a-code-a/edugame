@@ -15,7 +15,7 @@ The entire game must be contained within a single HTML file.
 This means all CSS must be inside a <style> tag in the <head>, and all JavaScript must be inside a <script> tag at the end of the <body>.
 The game should be visually appealing, using bright colors and clear fonts.
 It must be fully functional and self-contained.
-Do not use any external libraries or assets. Do not use any markdown formatting like \`\`\`html in your response.
+Do not use any external libraries or assets. Do not use any markdown formatting in your response.
 Your response should be ONLY the HTML code.`;
 
 export async function generateMinigameCode(prompt: string, customSettings?: Settings): Promise<string> {
