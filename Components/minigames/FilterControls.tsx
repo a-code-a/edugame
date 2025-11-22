@@ -16,11 +16,10 @@ const FilterPill: React.FC<{
   <button
     type="button"
     onClick={onClick}
-    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-      isActive
-        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-purple-300/60'
-        : 'bg-white/80 text-slate-600 border border-slate-200 hover:border-purple-200 hover:text-purple-600'
-    }`}
+    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${isActive
+        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+        : 'bg-white text-slate-600 border border-slate-200 hover:border-purple-300 hover:bg-purple-50'
+      }`}
   >
     {label}
   </button>
@@ -33,10 +32,12 @@ const FilterControls: React.FC<FilterControlsProps> = ({
   setSelectedSubject,
 }) => {
   return (
-    <div className="flex flex-col gap-4 rounded-[24px] bg-white/70 border border-white/80 px-5 py-4 shadow-sm">
+    <div className="space-y-5">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Klassenstufe</p>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+          Klassenstufe
+        </p>
+        <div className="flex flex-wrap gap-2">
           <FilterPill
             label="Alle"
             isActive={selectedGrade === 'All'}
@@ -56,8 +57,10 @@ const FilterControls: React.FC<FilterControlsProps> = ({
         </div>
       </div>
       <div>
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Fachbereich</p>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
+          Fachbereich
+        </p>
+        <div className="flex flex-wrap gap-2">
           <FilterPill
             label="Alle"
             isActive={selectedSubject === 'All'}
