@@ -5,12 +5,6 @@ interface HeaderProps {
   onMenuToggle?: () => void;
 }
 
-const ChevronIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" strokeWidth={1.6} stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6 8l4 4 4-4" />
-  </svg>
-);
-
 const MenuIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.6} stroke="currentColor" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -44,19 +38,6 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick, onMenuToggle }) => {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            className="hidden md:inline-flex items-center gap-2 rounded-full bg-white/80 px-4 py-2 text-sm font-medium text-slate-600 border border-white/60 shadow-sm hover:border-purple-200 hover:text-purple-700"
-          >
-            Deine Designs
-            <ChevronIcon className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            className="hidden lg:inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 to-rose-400 text-white px-5 py-2 text-sm font-semibold shadow-lg shadow-amber-200/50 hover:shadow-xl"
-          >
-            Probe starten
-          </button>
           {onSettingsClick && (
             <button
               onClick={onSettingsClick}

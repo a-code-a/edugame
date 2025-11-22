@@ -63,7 +63,7 @@ ${existingHtml}
             refinementInstruction = customSettings.refinementPrompt + `
 
 Here is the existing code:
-\`\`\`html
+\`\`\`html  
 ${existingHtml}
 \`\`\``;
         }

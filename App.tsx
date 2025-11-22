@@ -181,22 +181,26 @@ function AppContent() {
               setSelectedSubject={setSelectedSubject}
             />
 
-            <section ref={vibeCoderRef} className="max-w-4xl mx-auto">
-              <div className="bg-white/80 rounded-[30px] border border-white shadow-xl shadow-purple-100/50 p-8">
-                <VibeCoder onGameCreated={handleGameCreated} onGameSaved={handleGameSaved} />
-              </div>
-            </section>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-[1600px] mx-auto">
+              <section ref={vibeCoderRef} className="lg:col-span-4">
+                <div className="bg-white/80 rounded-[30px] border border-white shadow-xl shadow-purple-100/50 p-8 sticky top-8">
+                  <VibeCoder onGameCreated={handleGameCreated} onGameSaved={handleGameSaved} />
+                </div>
+              </section>
 
-            <LibrarySection
-              filteredGames={filteredGames}
-              handlePlayGame={handlePlayGame}
-              handleDeleteGame={handleDeleteGame}
-              selectedGrade={selectedGrade}
-              setSelectedGrade={setSelectedGrade}
-              selectedSubject={selectedSubject}
-              setSelectedSubject={setSelectedSubject}
-              setSearchTerm={setSearchTerm}
-            />
+              <div className="lg:col-span-8">
+                <LibrarySection
+                  filteredGames={filteredGames}
+                  handlePlayGame={handlePlayGame}
+                  handleDeleteGame={handleDeleteGame}
+                  selectedGrade={selectedGrade}
+                  setSelectedGrade={setSelectedGrade}
+                  selectedSubject={selectedSubject}
+                  setSelectedSubject={setSelectedSubject}
+                  setSearchTerm={setSearchTerm}
+                />
+              </div>
+            </div>
           </div>
         </main>
         {activeGame && (
