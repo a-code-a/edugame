@@ -45,22 +45,29 @@ export async function generateMinigameCode(prompt: string, customSettings?: Sett
         if (files && files.length > 0) {
             files.forEach(file => {
                 let mediaResolution = "media_resolution_low";
+
+                // Assign resolution based on file type
                 if (file.mimeType.startsWith("image/")) {
                     mediaResolution = "media_resolution_high";
-                } else if (file.mimeType === "application/pdf") {
+                } else if (
+                    file.mimeType === "application/pdf" ||
+                    file.mimeType.includes("word") ||
+                    file.mimeType.includes("excel") ||
+                    file.mimeType.includes("powerpoint") ||
+                    file.mimeType.includes("spreadsheet") ||
+                    file.mimeType.includes("presentation") ||
+                    file.mimeType.includes("document")
+                ) {
+                    // Documents, PDFs, and office files get medium resolution for better text extraction
                     mediaResolution = "media_resolution_medium";
                 }
+                // Video, audio, and other files default to low resolution
 
                 parts.push({
                     inlineData: {
                         mimeType: file.mimeType,
                         data: file.data
                     },
-                    // Note: mediaResolution might need to be passed differently depending on the exact SDK version/structure
-                    // For now, we'll try to include it if the API supports it in this structure, 
-                    // or rely on defaults if it's a separate config. 
-                    // Based on the user provided docs: 
-                    // "You can set the resolution now for each individual Media part... mediaResolution: { level: ... }"
                     mediaResolution: {
                         level: mediaResolution
                     }

@@ -58,9 +58,18 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
     const newAttachedFiles: AttachedFile[] = [];
 
     for (const file of files) {
-      // Basic validation
-      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
-        setError(`File type ${file.type} not supported. Please upload images or PDFs.`);
+      // Gemini 3.0 supports: images, audio, video, PDFs, text, and various document formats
+      // Allow most common file types and let Gemini handle compatibility
+      const unsupportedTypes = [
+        'application/x-msdownload', // .exe
+        'application/x-executable',
+        'application/x-mach-binary',
+        'application/octet-stream' // generic binary, often executables
+      ];
+
+      // Block potentially dangerous/unsupported file types
+      if (unsupportedTypes.includes(file.type) || file.name.match(/\.(exe|dll|so|dylib|app)$/i)) {
+        setError(`File type ${file.type || 'unknown'} not supported for security reasons.`);
         continue;
       }
 
@@ -232,12 +241,12 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
                   onChange={handleFileSelect}
                   className="hidden"
                   multiple
-                  accept="image/*,application/pdf"
+                  accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf,.hwp,.hwpx"
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                  title="Upload image or PDF"
+                  title="Upload files (images, videos, audio, documents, spreadsheets, presentations, and more)"
                   disabled={isLoading}
                 >
                   <PaperclipIcon className="h-5 w-5" />
