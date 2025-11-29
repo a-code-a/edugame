@@ -70,7 +70,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   const handleClose = () => {
     if (hasChanges) {
-      if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
+      if (window.confirm('Du hast ungespeicherte Änderungen. Möchtest du wirklich schließen?')) {
         handleCancel();
       }
     } else {
@@ -87,25 +87,25 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-start justify-start"
       onClick={handleBackdropClick}
     >
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-      
+
       {/* Settings Panel */}
       <div className="relative w-full max-w-md h-full bg-white dark:bg-slate-900 shadow-2xl transform transition-transform duration-300 ease-in-out">
         <div className="h-full flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-              Settings
+              Einstellungen
             </h2>
             <button
               onClick={handleClose}
               className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors duration-200"
-              aria-label="Close settings"
+              aria-label="Einstellungen schließen"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -118,7 +118,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
             {/* Use Custom Prompts Toggle */}
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                Custom Prompts
+                Benutzerdefinierte Prompts
               </h3>
               <div className="flex items-center space-x-3">
                 <input
@@ -129,11 +129,11 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                   className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-slate-800 focus:ring-2 dark:bg-slate-700 dark:border-slate-600"
                 />
                 <label htmlFor="useCustomPrompts" className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Use custom AI prompts
+                  Benutzerdefinierte KI-Prompts verwenden
                 </label>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Enable this to use your own custom prompts for game generation and refinement.
+                Aktiviere dies, um eigene benutzerdefinierte Prompts für Spielerstellung und -verfeinerung zu verwenden.
               </p>
             </div>
 
@@ -141,19 +141,19 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
             {localSettings.useCustomPrompts && (
               <div className="space-y-8">
                 <PromptEditor
-                  title="Main System Prompt"
+                  title="Haupt-System-Prompt"
                   prompt={localSettings.mainPrompt}
                   onPromptChange={(value) => handlePromptChange('mainPrompt', value)}
                   onReset={handleResetMainPrompt}
-                  placeholder="Enter your custom main system prompt..."
+                  placeholder="Gib deinen benutzerdefinierten Haupt-System-Prompt ein..."
                 />
 
                 <PromptEditor
-                  title="Refinement Prompt"
+                  title="Verfeinerungs-Prompt"
                   prompt={localSettings.refinementPrompt}
                   onPromptChange={(value) => handlePromptChange('refinementPrompt', value)}
                   onReset={handleResetRefinementPrompt}
-                  placeholder="Enter your custom refinement prompt..."
+                  placeholder="Gib deinen benutzerdefinierten Verfeinerungs-Prompt ein..."
                 />
               </div>
             )}
@@ -166,14 +166,14 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({
                 onClick={handleCancel}
                 className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors duration-200"
               >
-                Cancel
+                Abbrechen
               </button>
               <button
                 onClick={handleSave}
                 disabled={!hasChanges}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
-                Save Changes
+                Änderungen speichern
               </button>
             </div>
           </div>

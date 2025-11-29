@@ -82,7 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
       <aside
         className={`fixed lg:static z-50 inset-y-0 left-0 flex h-full w-72 flex-col bg-gradient-to-b from-white/90 via-white/80 to-white/60 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-900/80 border-r border-white/40 dark:border-slate-800/80 shadow-xl backdrop-blur-2xl transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           }`}
-        aria-label="Main navigation"
+        aria-label="Hauptnavigation"
       >
         <div className="flex items-center justify-between px-6 pt-6 pb-4">
           <div className="flex items-center gap-3">
@@ -98,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
             type="button"
             onClick={onCloseMobile}
             className="lg:hidden p-2 rounded-full bg-white/60 text-slate-500 hover:text-slate-700 shadow-sm"
-            aria-label="Close navigation"
+            aria-label="Navigation schließen"
           >
             <IconClose className="h-5 w-5" />
           </button>
@@ -111,7 +111,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
             className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold py-3 shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all duration-200"
           >
             <IconPlus className="h-5 w-5" />
-            Create new game
+            Neues Spiel erstellen
           </button>
         </div>
 
@@ -120,22 +120,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
             Navigation
           </p>
           <div className="space-y-1 rounded-2xl bg-white/70 dark:bg-slate-900/40 p-2 shadow-inner border border-white/60 dark:border-slate-800/60">
-            <IconButton label="Home">
+            <IconButton label="Startseite">
               <IconHome className="h-5 w-5" />
             </IconButton>
-            <IconButton label="Projects">
+            <IconButton label="Projekte">
               <IconProjects className="h-5 w-5" />
             </IconButton>
-            <IconButton label="Templates">
+            <IconButton label="Vorlagen">
               <IconTemplates className="h-5 w-5" />
             </IconButton>
-            <IconButton label="Brand Kit">
+            <IconButton label="Marken-Kit">
               <IconBrand className="h-5 w-5" />
             </IconButton>
-            <IconButton label="AI Studio">
+            <IconButton label="KI-Studio">
               <IconSparkles className="h-5 w-5" />
             </IconButton>
-            <IconButton label="More">
+            <IconButton label="Mehr">
               <IconMore className="h-5 w-5" />
             </IconButton>
           </div>
@@ -143,13 +143,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
           <div className="mt-8">
             <div className="flex items-center justify-between px-2">
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
-                Recent games
+                Letzte Spiele
               </p>
               <button
                 type="button"
                 className="text-xs font-medium text-purple-600 hover:text-purple-700 dark:text-purple-300 dark:hover:text-purple-200"
               >
-                View all
+                Alle anzeigen
               </button>
             </div>
             <ul className="mt-3 space-y-3">
@@ -166,13 +166,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
                       {game.title}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Grade {game.grade} · {game.subject}
+                      Klasse {game.grade} · {game.subject}
                     </p>
                   </div>
                 </li>
               ))}
               {recentGames.length === 0 && (
-                <li className="text-xs text-slate-400 px-3 py-2">No games yet · Create one above</li>
+                <li className="text-xs text-slate-400 px-3 py-2">Noch keine Spiele · Erstelle eines oben</li>
               )}
             </ul>
           </div>

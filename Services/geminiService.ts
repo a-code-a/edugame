@@ -9,19 +9,19 @@ if (!API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-const baseSystemInstruction = `You are an expert web developer specializing in creating simple, fun, and educational browser minigames for children.
-Your task is to generate the complete code for a minigame based on the user's prompt.
-The entire game must be contained within a single HTML file.
-This means all CSS must be inside a <style> tag in the <head>, and all JavaScript must be inside a <script> tag at the end of the <body>.
-The game should be visually appealing, using bright colors and clear fonts.
-It must be fully functional and self-contained.
-Do not use any external libraries or assets.
+const baseSystemInstruction = `Du bist ein erfahrener Webentwickler, der sich auf die Erstellung einfacher, unterhaltsamer und lehrreicher Browser-Minispiele für Kinder spezialisiert hat.
+Deine Aufgabe ist es, den vollständigen Code für ein Minispiel basierend auf der Anfrage des Benutzers zu generieren.
+Das gesamte Spiel muss in einer einzigen HTML-Datei enthalten sein.
+Das bedeutet, dass alle CSS in einem <style>-Tag im <head> stehen müssen und alle JavaScript in einem <script>-Tag am Ende des <body>.
+Das Spiel sollte optisch ansprechend sein und helle Farben sowie klare Schriftarten verwenden.
+Es muss vollständig funktionsfähig und eigenständig sein.
+Verwende keine externen Bibliotheken oder Assets.
 
-CRITICAL: Your response must be ONLY the raw HTML code. 
-DO NOT wrap your response in markdown code fences.
-DO NOT start with \`\`\`html
-DO NOT use any markdown formatting whatsoever.
-Start your response directly with <!DOCTYPE html> and nothing else before it.`;
+WICHTIG: Deine Antwort muss NUR der reine HTML-Code sein.
+Wickle deine Antwort NICHT in Markdown-Code-Blöcke ein.
+Beginne NICHT mit \`\`\`html
+Verwende KEINE Markdown-Formatierung.
+Beginne deine Antwort direkt mit <!DOCTYPE html> und nichts anderem davor.`;
 
 export interface FilePart {
     mimeType: string;
@@ -87,24 +87,24 @@ export async function generateMinigameCode(prompt: string, customSettings?: Sett
         return response.text;
     } catch (error) {
         console.error("Gemini API error:", error);
-        throw new Error("Failed to generate minigame. Please try again.");
+        throw new Error("Fehler beim Erzeugen des Minispiels. Bitte versuche es erneut.");
     }
 }
 
 export async function refineMinigameCode(prompt: string, existingHtml: string, customSettings?: Settings): Promise<string> {
-    let refinementInstruction = `You are a web developer tasked with modifying an existing HTML minigame.
-The user will provide you with the current HTML code and a prompt describing the changes they want.
-Your task is to return the **full, updated HTML code** with the requested modifications implemented.
-Maintain the single-file structure (inline CSS and JS).
-Ensure the game remains fully functional.
+    let refinementInstruction = `Du bist ein Webentwickler, der beauftragt ist, ein bestehendes HTML-Minispiel zu modifizieren.
+Der Benutzer wird dir den aktuellen HTML-Code und eine Beschreibung der gewünschten Änderungen liefern.
+Deine Aufgabe ist es, den **vollständigen, aktualisierten HTML-Code** mit den implementierten Änderungen zurückzugeben.
+Behalte die Einzeldatei-Struktur bei (inline CSS und JS).
+Stelle sicher, dass das Spiel vollständig funktionsfähig bleibt.
 
-CRITICAL: Your response must be ONLY the raw HTML code.
-DO NOT wrap your response in markdown code fences.
-DO NOT start with \`\`\`html
-DO NOT use any markdown formatting whatsoever.
-Start your response directly with <!DOCTYPE html> and nothing else before it.
+WICHTIG: Deine Antwort muss NUR der reine HTML-Code sein.
+Wickle deine Antwort NICHT in Markdown-Code-Blöcke ein.
+Beginne NICHT mit \`\`\`html
+Verwende KEINE Markdown-Formatierung.
+Beginne deine Antwort direkt mit <!DOCTYPE html> und nichts anderem davor.
 
-Here is the existing code:
+Hier ist der bestehende Code:
 \`\`\`html
 ${existingHtml}
 \`\`\`
@@ -132,17 +132,17 @@ ${existingHtml}
         return response.text;
     } catch (error) {
         console.error("Gemini API error:", error);
-        throw new Error("Failed to refine minigame. Please try again.");
+        throw new Error("Fehler beim Verfeinern des Minispiels. Bitte versuche es erneut.");
     }
 }
 
 export async function generateGameDescription(prompt: string): Promise<string> {
     try {
-        const descriptionPrompt = `You are a creative educational content writer. Based on the following game concept, write a concise, engaging description (2-3 sentences maximum) that explains what the game does and what educational concepts it teaches.
+        const descriptionPrompt = `Du bist ein kreativer Autor für Bildungsinhalte. Schreibe basierend auf folgendem Spielkonzept eine prägnante, ansprechende Beschreibung (maximal 2-3 Sätze), die erklärt, was das Spiel macht und welche pädagogischen Konzepte es vermittelt.
 
-Game concept: ${prompt}
+Spielkonzept: ${prompt}
 
-Write only the description, nothing else. Make it educational, exciting, and suitable for students maximum 20 Words.`;
+Schreibe nur die Beschreibung, sonst nichts. Mache sie lehrreich, spannend und geeignet für Schüler. Maximal 20 Wörter.`;
 
         const response = await ai.models.generateContent({
             model: "gemini-3-pro-preview",
@@ -156,17 +156,17 @@ Write only the description, nothing else. Make it educational, exciting, and sui
     } catch (error) {
         console.error("Gemini API error generating description:", error);
         // Return a fallback description if AI generation fails
-        return "An AI-generated educational minigame designed to make learning fun and interactive.";
+        return "Ein KI-generiertes Lernspiel, das Lernen unterhaltsam und interaktiv macht.";
     }
 }
 
 export async function generateGameTitle(prompt: string): Promise<string> {
     try {
-        const titlePrompt = `You are a creative content writer. Based on the following game concept, create a short, catchy title (maximum 5 words) that captures the essence of the game.
+        const titlePrompt = `Du bist ein kreativer Autor. Erstelle basierend auf folgendem Spielkonzept einen kurzen, einprägsamen Titel (maximal 5 Wörter), der die Essenz des Spiels erfasst.
 
-Game concept: ${prompt}
+Spielkonzept: ${prompt}
 
-Write only the title, nothing else. Make it exciting, clear, and suitable for students. Do not use quotes or special formatting.`;
+Schreibe nur den Titel, sonst nichts. Mache ihn spannend, klar und geeignet für Schüler. Verwende keine Anführungszeichen oder besondere Formatierung.`;
 
         const response = await ai.models.generateContent({
             model: "gemini-3-pro-preview",

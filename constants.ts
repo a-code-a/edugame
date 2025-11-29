@@ -10,7 +10,7 @@ const simpleAdditionGameHtml = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Addition</title>
+    <title>Einfache Addition</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f7ff; }
         .container { text-align: center; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 90%; max-width: 400px; }
@@ -26,10 +26,10 @@ const simpleAdditionGameHtml = `
 </head>
 <body>
     <div class="container">
-        <h1>Addition Challenge!</h1>
+        <h1>Additions-Herausforderung!</h1>
         <div id="problem"></div>
         <input type="number" id="answer" autofocus />
-        <button onclick="checkAnswer()">Submit</button>
+        <button onclick="checkAnswer()">Absenden</button>
         <div id="feedback"></div>
     </div>
     <script>
@@ -49,11 +49,11 @@ const simpleAdditionGameHtml = `
         function checkAnswer() {
             const userAnswer = parseInt(answerEl.value, 10);
             if (userAnswer === correctAnswer) {
-                feedbackEl.textContent = 'Correct! Great job!';
+                feedbackEl.textContent = 'Richtig! Super gemacht!';
                 feedbackEl.className = 'correct';
                 setTimeout(generateProblem, 1500);
             } else {
-                feedbackEl.textContent = 'Not quite. Try again!';
+                feedbackEl.textContent = 'Nicht ganz. Versuch es nochmal!';
                 feedbackEl.className = 'incorrect';
             }
         }
@@ -74,7 +74,7 @@ const spellingGameHtml = `
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spelling Bee</title>
+    <title>Buchstabierbiene</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #fffbe6; }
         .container { text-align: center; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); width: 90%; max-width: 450px; }
@@ -88,14 +88,14 @@ const spellingGameHtml = `
 </head>
 <body>
     <div class="container">
-        <h1>Unscramble the Word!</h1>
+        <h1>Entmische das Wort!</h1>
         <div id="scrambled-word"></div>
         <input type="text" id="guess" autofocus />
-        <button onclick="checkGuess()">Guess</button>
+        <button onclick="checkGuess()">Raten</button>
         <div id="feedback"></div>
     </div>
     <script>
-        const words = ['APPLE', 'BEACH', 'CHAIR', 'DREAM', 'EARTH', 'FLOWER', 'GRAPE', 'HAPPY', 'IGLOO'];
+        const words = ['APFEL', 'STRAND', 'STUHL', 'TRAUM', 'ERDE', 'BLUME', 'TRAUBE', 'GLÜCKLICH', 'IGLU'];
         let currentWord = '';
         const scrambledWordEl = document.getElementById('scrambled-word');
         const guessEl = document.getElementById('guess');
@@ -121,11 +121,11 @@ const spellingGameHtml = `
         }
         function checkGuess() {
             if (guessEl.value.toUpperCase() === currentWord) {
-                feedbackEl.textContent = 'You got it!';
+                feedbackEl.textContent = 'Du hast es geschafft!';
                 feedbackEl.style.color = 'green';
                 setTimeout(newWord, 1500);
             } else {
-                feedbackEl.textContent = 'Try again!';
+                feedbackEl.textContent = 'Versuch es nochmal!';
                 feedbackEl.style.color = 'red';
             }
         }
@@ -143,16 +143,16 @@ const spellingGameHtml = `
 export const INITIAL_MINIGAMES: Minigame[] = [
     {
         id: 'math-add-1',
-        title: 'Simple Addition',
-        description: 'A fun game to practice basic addition skills.',
+        title: 'Einfache Addition',
+        description: 'Ein unterhaltsames Spiel zum Üben grundlegender Additionsfertigkeiten.',
         grade: 1,
         subject: 'Math',
         htmlContent: simpleAdditionGameHtml,
     },
     {
         id: 'lang-spell-1',
-        title: 'Spelling Bee',
-        description: 'Unscramble the letters to form a word.',
+        title: 'Buchstabierbiene',
+        description: 'Entmische die Buchstaben, um ein Wort zu bilden.',
         grade: 2,
         subject: 'Language Arts',
         htmlContent: spellingGameHtml,

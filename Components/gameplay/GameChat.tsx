@@ -50,7 +50,7 @@ const GameChat: React.FC<GameChatProps> = ({ messages, onSendMessage, isGenerati
             </svg>
           </div>
           <div>
-            <h3 className="text-base font-semibold text-slate-900">Refine with AI</h3>
+            <h3 className="text-base font-semibold text-slate-900">Mit KI verfeinern</h3>
             <p className="text-xs text-slate-500">Schreibe Wünsche oder Anpassungen ins Chatfeld</p>
           </div>
         </div>
@@ -65,8 +65,8 @@ const GameChat: React.FC<GameChatProps> = ({ messages, onSendMessage, isGenerati
             msg.sender === 'user'
               ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white'
               : msg.sender === 'ai'
-              ? 'bg-white text-slate-700 border border-white/80'
-              : 'bg-amber-50 text-amber-700 border border-amber-200 italic text-xs';
+                ? 'bg-white text-slate-700 border border-white/80'
+                : 'bg-amber-50 text-amber-700 border border-amber-200 italic text-xs';
           return (
             <div key={index} className={`flex ${alignment}`}>
               <div className={`${bubbleBase} ${bubbleStyles}`}>{msg.text}</div>
@@ -103,7 +103,7 @@ const GameChat: React.FC<GameChatProps> = ({ messages, onSendMessage, isGenerati
             onClick={handleSend}
             disabled={isGenerating || !input.trim()}
             className="absolute right-2 top-1/2 -translate-y-1/2 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md shadow-purple-300/50 transition hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60"
-            aria-label="Send message"
+            aria-label="Nachricht senden"
           >
             <SendIcon className="h-4 w-4" />
           </button>

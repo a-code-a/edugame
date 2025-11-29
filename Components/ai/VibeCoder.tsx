@@ -69,12 +69,12 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
 
       // Block potentially dangerous/unsupported file types
       if (unsupportedTypes.includes(file.type) || file.name.match(/\.(exe|dll|so|dylib|app)$/i)) {
-        setError(`File type ${file.type || 'unknown'} not supported for security reasons.`);
+        setError(`Dateityp ${file.type || 'unbekannt'} wird aus Sicherheitsgründen nicht unterstützt.`);
         continue;
       }
 
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
-        setError(`File ${file.name} is too large. Max size is 10MB.`);
+        setError(`Datei ${file.name} ist zu groß. Maximale Größe ist 10MB.`);
         continue;
       }
 
@@ -88,7 +88,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
         });
       } catch (err) {
         console.error("Error reading file:", err);
-        setError(`Failed to read file ${file.name}`);
+        setError(`Fehler beim Lesen der Datei ${file.name}`);
       }
     }
 
@@ -104,7 +104,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
           const base64 = reader.result.split(',')[1];
           resolve(base64);
         } else {
-          reject(new Error('Failed to read file'));
+          reject(new Error('Fehler beim Lesen der Datei'));
         }
       };
       reader.onerror = reject;
@@ -137,7 +137,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
 
   const handleGenerate = async () => {
     if (!prompt.trim() && attachedFiles.length === 0) {
-      setError('Please enter a description or upload a file for your game.');
+      setError('Bitte gib eine Beschreibung ein oder lade eine Datei für dein Spiel hoch.');
       return;
     }
     setIsLoading(true);
@@ -146,8 +146,8 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
       // Generate game code, description, and title in parallel
       const [htmlContent, aiDescription, aiTitle] = await Promise.all([
         generateMinigameCode(prompt, settings, attachedFiles),
-        generateGameDescription(prompt || "Game based on uploaded files"),
-        generateGameTitle(prompt || "New Game")
+        generateGameDescription(prompt || "Spiel basierend auf hochgeladenen Dateien"),
+        generateGameTitle(prompt || "Neues Spiel")
       ]);
 
       const newGame: Minigame = {
@@ -163,7 +163,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
       setPrompt('');
       setAttachedFiles([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred.');
+      setError(err instanceof Error ? err.message : 'Ein unbekannter Fehler ist aufgetreten.');
     } finally {
       setIsLoading(false);
     }
@@ -189,7 +189,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
         setError(errorMessage);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorMessage = error instanceof Error ? error.message : 'Ein unbekannter Fehler ist aufgetreten';
       setError(errorMessage);
     } finally {
       setIsSaving(false);
@@ -246,7 +246,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                  title="Upload files (images, videos, audio, documents, spreadsheets, presentations, and more)"
+                  title="Dateien hochladen (Bilder, Videos, Audio, Dokumente, Tabellen, Präsentationen und mehr)"
                   disabled={isLoading}
                 >
                   <PaperclipIcon className="h-5 w-5" />

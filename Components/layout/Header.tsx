@@ -21,7 +21,7 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick, onMenuToggle }) => {
             <button
               type="button"
               onClick={onMenuToggle}
-              aria-label="Open navigation"
+              aria-label="Navigation öffnen"
               className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-lg shadow-slate-400/15 text-slate-600 hover:text-slate-900 transition-colors lg:hidden"
             >
               <MenuIcon className="h-6 w-6" />
@@ -33,7 +33,7 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick, onMenuToggle }) => {
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">EduGame</p>
-              <h1 className="text-xl font-bold text-slate-900">Creator Workspace</h1>
+              <h1 className="text-xl font-bold text-slate-900">Creator-Arbeitsbereich</h1>
             </div>
           </div>
         </div>
@@ -42,7 +42,7 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick, onMenuToggle }) => {
             <button
               onClick={onSettingsClick}
               className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white border border-white/70 text-slate-500 hover:text-purple-600 shadow-lg shadow-slate-300/30 transition-colors"
-              aria-label="Settings"
+              aria-label="Einstellungen"
             >
               <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
