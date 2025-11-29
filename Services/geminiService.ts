@@ -23,7 +23,12 @@ DO NOT start with \`\`\`html
 DO NOT use any markdown formatting whatsoever.
 Start your response directly with <!DOCTYPE html> and nothing else before it.`;
 
-export async function generateMinigameCode(prompt: string, customSettings?: Settings): Promise<string> {
+export interface FilePart {
+    mimeType: string;
+    data: string; // base64 encoded string
+}
+
+export async function generateMinigameCode(prompt: string, customSettings?: Settings, files?: FilePart[]): Promise<string> {
     try {
         let systemInstruction = baseSystemInstruction;
 
@@ -35,9 +40,41 @@ export async function generateMinigameCode(prompt: string, customSettings?: Sett
             }
         }
 
+        const parts: any[] = [{ text: `${systemInstruction}\n\nUser request: ${prompt}` }];
+
+        if (files && files.length > 0) {
+            files.forEach(file => {
+                let mediaResolution = "media_resolution_low";
+                if (file.mimeType.startsWith("image/")) {
+                    mediaResolution = "media_resolution_high";
+                } else if (file.mimeType === "application/pdf") {
+                    mediaResolution = "media_resolution_medium";
+                }
+
+                parts.push({
+                    inlineData: {
+                        mimeType: file.mimeType,
+                        data: file.data
+                    },
+                    // Note: mediaResolution might need to be passed differently depending on the exact SDK version/structure
+                    // For now, we'll try to include it if the API supports it in this structure, 
+                    // or rely on defaults if it's a separate config. 
+                    // Based on the user provided docs: 
+                    // "You can set the resolution now for each individual Media part... mediaResolution: { level: ... }"
+                    mediaResolution: {
+                        level: mediaResolution
+                    }
+                });
+            });
+        }
+
         const response = await ai.models.generateContent({
             model: "gemini-3-pro-preview",
-            contents: `${systemInstruction}\\n\\nUser request: ${prompt}`,
+            contents: [
+                {
+                    parts: parts
+                }
+            ]
         });
 
         return response.text;

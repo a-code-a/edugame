@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { generateMinigameCode, generateGameDescription, generateGameTitle } from '../../Services/geminiService';
+import React, { useState, useRef } from 'react';
+import { generateMinigameCode, generateGameDescription, generateGameTitle, FilePart } from '../../Services/geminiService';
 import DatabaseService from '../../Services/DatabaseService';
 import { Minigame } from '../../types';
 import { useSettings } from '../../Context/SettingsContext';
@@ -15,18 +15,120 @@ const WandIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
+const PaperclipIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13" />
+  </svg>
+);
+
+const XMarkIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+interface AttachedFile extends FilePart {
+  name: string;
+  id: string;
+}
+
 const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastCreatedGame, setLastCreatedGame] = useState<Minigame | null>(null);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { settings } = useSettings();
   const databaseService = DatabaseService.getInstance();
 
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      await processFiles(Array.from(event.target.files));
+    }
+    // Reset input so same file can be selected again if needed
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const processFiles = async (files: File[]) => {
+    const newAttachedFiles: AttachedFile[] = [];
+
+    for (const file of files) {
+      // Basic validation
+      if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
+        setError(`File type ${file.type} not supported. Please upload images or PDFs.`);
+        continue;
+      }
+
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        setError(`File ${file.name} is too large. Max size is 10MB.`);
+        continue;
+      }
+
+      try {
+        const base64Data = await readFileAsBase64(file);
+        newAttachedFiles.push({
+          id: Math.random().toString(36).substring(7),
+          name: file.name,
+          mimeType: file.type,
+          data: base64Data
+        });
+      } catch (err) {
+        console.error("Error reading file:", err);
+        setError(`Failed to read file ${file.name}`);
+      }
+    }
+
+    setAttachedFiles(prev => [...prev, ...newAttachedFiles]);
+  };
+
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        } else {
+          reject(new Error('Failed to read file'));
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRemoveFile = (id: string) => {
+    setAttachedFiles(prev => prev.filter(f => f.id !== id));
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      await processFiles(Array.from(e.dataTransfer.files));
+    }
+  };
+
   const handleGenerate = async () => {
-    if (!prompt.trim()) {
-      setError('Please enter a description for your game.');
+    if (!prompt.trim() && attachedFiles.length === 0) {
+      setError('Please enter a description or upload a file for your game.');
       return;
     }
     setIsLoading(true);
@@ -34,9 +136,9 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
     try {
       // Generate game code, description, and title in parallel
       const [htmlContent, aiDescription, aiTitle] = await Promise.all([
-        generateMinigameCode(prompt, settings),
-        generateGameDescription(prompt),
-        generateGameTitle(prompt)
+        generateMinigameCode(prompt, settings, attachedFiles),
+        generateGameDescription(prompt || "Game based on uploaded files"),
+        generateGameTitle(prompt || "New Game")
       ]);
 
       const newGame: Minigame = {
@@ -50,6 +152,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
       onGameCreated(newGame);
       setLastCreatedGame(newGame);
       setPrompt('');
+      setAttachedFiles([]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred.');
     } finally {
@@ -85,7 +188,12 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[24px] bg-white/90 border border-slate-200/60 shadow-xl shadow-slate-300/30">
+    <div
+      className={`relative overflow-hidden rounded-[24px] bg-white/90 border transition-colors duration-200 shadow-xl shadow-slate-300/30 ${isDragging ? 'border-purple-500 bg-purple-50' : 'border-slate-200/60'}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className="relative p-6 space-y-5">
         <div className="flex items-center gap-3 pb-4 border-b border-slate-200/50">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 text-white shadow-md">
@@ -102,20 +210,57 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
               Idee formulieren
             </label>
-            <textarea
-              data-role="vibe-prompt"
-              value={prompt}
-              onChange={(event) => setPrompt(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                  event.preventDefault();
-                  handleGenerate();
-                }
-              }}
-              placeholder="z. B. Ein Quiz mit drei Schwierigkeitsstufen, das Bruchteile auf einem Zahlenstrahl visualisiert."
-              className="w-full h-32 resize-none rounded-xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-200/50 transition"
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <textarea
+                data-role="vibe-prompt"
+                value={prompt}
+                onChange={(event) => setPrompt(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    handleGenerate();
+                  }
+                }}
+                placeholder="z. B. Ein Quiz mit drei Schwierigkeitsstufen, das Bruchteile auf einem Zahlenstrahl visualisiert."
+                className="w-full h-32 resize-none rounded-xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-200/50 transition pr-10"
+                disabled={isLoading}
+              />
+              <div className="absolute bottom-3 right-3">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  multiple
+                  accept="image/*,application/pdf"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                  title="Upload image or PDF"
+                  disabled={isLoading}
+                >
+                  <PaperclipIcon className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Attached Files Preview */}
+            {attachedFiles.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {attachedFiles.map(file => (
+                  <div key={file.id} className="flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-1.5 text-xs text-slate-700 border border-slate-200">
+                    <span className="truncate max-w-[150px]">{file.name}</span>
+                    <button
+                      onClick={() => handleRemoveFile(file.id)}
+                      className="text-slate-400 hover:text-red-500 transition-colors"
+                    >
+                      <XMarkIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {error && (
