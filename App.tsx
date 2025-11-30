@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Minigame, Settings } from './types';
 import { INITIAL_MINIGAMES } from './constants';
 import { SettingsProvider, useSettings } from './Context/SettingsContext';
@@ -6,10 +7,11 @@ import DatabaseService from './Services/DatabaseService';
 import Header from '@/Components/layout/Header';
 import Sidebar from '@/Components/layout/Sidebar';
 import GameViewer from '@/Components/gameplay/GameViewer';
-import VibeCoder from '@/Components/ai/VibeCoder';
 import SettingsPanel from '@/Components/settings/SettingsPanel';
-import HeroSection from '@/Components/dashboard/HeroSection';
-import LibrarySection from '@/Components/dashboard/LibrarySection';
+import HomePage from '@/Components/pages/HomePage';
+import ProjectsPage from '@/Components/pages/ProjectsPage';
+import TemplatesPage from '@/Components/pages/TemplatesPage';
+import StudioPage from '@/Components/pages/StudioPage';
 
 function AppContent() {
   const [minigames, setMinigames] = useState<Minigame[]>(INITIAL_MINIGAMES);
@@ -21,7 +23,6 @@ function AppContent() {
   const [activeHeroFilter, setActiveHeroFilter] = useState<string>('library');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { settings, updateSettings } = useSettings();
-  const vibeCoderRef = useRef<HTMLDivElement>(null);
   const databaseService = DatabaseService.getInstance();
 
   const filteredGames = useMemo(() => {
@@ -51,8 +52,6 @@ function AppContent() {
   const handleGameCreated = (newGame: Minigame) => {
     setMinigames((prevGames) => [newGame, ...prevGames]);
     setActiveGame(newGame);
-    setSelectedSubject('All');
-    setSelectedGrade('All');
   };
 
   const handleGameUpdate = (gameId: string, newHtmlContent: string) => {
@@ -89,7 +88,6 @@ function AppContent() {
       return;
     }
 
-    // If game is saved to database (check flag or _id presence), delete from backend first
     if (gameToDelete.isSavedToDB || (gameToDelete as any)._id) {
       try {
         const result = await databaseService.deleteGame(gameId);
@@ -100,11 +98,10 @@ function AppContent() {
       } catch (error) {
         console.error('Error deleting game:', error);
         alert(`Failed to delete game: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        return; // Don't remove from state if database deletion fails
+        return;
       }
     }
 
-    // Only remove from state if database deletion was successful or game wasn't saved to DB
     setMinigames((prevGames) => {
       return prevGames.filter(game => game.id !== gameId);
     });
@@ -117,19 +114,16 @@ function AppContent() {
         setMinigames((prevGames) => {
           const existingGameIds = new Set(prevGames.map(game => game.id));
 
-          // Filter out new games from database that don't exist in current state
           const newGamesFromDB = savedGames.filter(dbGame => {
             const hasExistingId = existingGameIds.has(dbGame.id);
             return !hasExistingId;
-          }).map(game => ({ ...game, isSavedToDB: true })); // Ensure isSavedToDB is true
+          }).map(game => ({ ...game, isSavedToDB: true }));
 
-          // Update existing games with isSavedToDB flag and add new games from DB
           const updatedExistingGames = prevGames.map(game => ({
             ...game,
             isSavedToDB: savedGames.some(dbGame => dbGame.id === game.id)
           }));
 
-          // Combine updated existing games with new games from database
           return [...updatedExistingGames, ...newGamesFromDB];
         });
       } catch (error) {
@@ -144,82 +138,94 @@ function AppContent() {
     updateSettings(newSettings);
   };
 
-  const handleCreateFromSidebar = useCallback(() => {
-    setActiveHeroFilter('ai');
+  const handleCreateFromSidebar = () => {
     setIsSidebarOpen(false);
-    if (vibeCoderRef.current) {
-      vibeCoderRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-    requestAnimationFrame(() => {
-      const textarea = document.querySelector<HTMLTextAreaElement>('[data-role="vibe-prompt"]');
-      textarea?.focus();
-    });
-  }, []);
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f5f3ff] via-[#f6f9ff] to-[#fef6ff] flex text-slate-900">
-      <Sidebar
-        isMobileOpen={isSidebarOpen}
-        onCloseMobile={() => setIsSidebarOpen(false)}
-        onCreateClick={handleCreateFromSidebar}
-        recentGames={recentGames}
-      />
-      <div className="flex-1 flex flex-col relative overflow-hidden">
-        <Header
-          onSettingsClick={() => setIsSettingsOpen(true)}
-          onMenuToggle={() => setIsSidebarOpen(true)}
+    <BrowserRouter>
+      <div className="min-h-screen bg-gradient-to-br from-[#f5f3ff] via-[#f6f9ff] to-[#fef6ff] flex text-slate-900">
+        <Sidebar
+          isMobileOpen={isSidebarOpen}
+          onCloseMobile={() => setIsSidebarOpen(false)}
+          onCreateClick={handleCreateFromSidebar}
+          recentGames={recentGames}
         />
-        <main className="relative flex-1 overflow-y-auto pb-12">
-          <div className="absolute inset-x-16 top-6 h-64 bg-gradient-to-r from-purple-300/40 via-white to-sky-200/40 blur-3xl pointer-events-none" />
-          <div className="relative z-10 px-4 sm:px-8 lg:px-16 space-y-12 pt-8">
-            <HeroSection
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              activeHeroFilter={activeHeroFilter}
-              setActiveHeroFilter={setActiveHeroFilter}
-              selectedSubject={selectedSubject}
-              setSelectedSubject={setSelectedSubject}
-            />
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-[1600px] mx-auto">
-              <section ref={vibeCoderRef} className="lg:col-span-4">
-                <div className="bg-white/80 rounded-[30px] border border-white shadow-xl shadow-purple-100/50 p-8 sticky top-8">
-                  <VibeCoder onGameCreated={handleGameCreated} onGameSaved={handleGameSaved} />
-                </div>
-              </section>
-
-              <div className="lg:col-span-8">
-                <LibrarySection
-                  filteredGames={filteredGames}
-                  handlePlayGame={handlePlayGame}
-                  handleDeleteGame={handleDeleteGame}
-                  selectedGrade={selectedGrade}
-                  setSelectedGrade={setSelectedGrade}
-                  selectedSubject={selectedSubject}
-                  setSelectedSubject={setSelectedSubject}
-                  setSearchTerm={setSearchTerm}
-                />
-              </div>
-            </div>
-          </div>
-        </main>
-        {activeGame && (
-          <GameViewer
-            game={activeGame}
-            onClose={handleCloseViewer}
-            onGameUpdate={handleGameUpdate}
-            onGameDetailsUpdate={handleGameDetailsUpdate}
-            onGameSaved={handleGameSaved}
+        <div className="flex-1 flex flex-col relative overflow-hidden">
+          <Header
+            onSettingsClick={() => setIsSettingsOpen(true)}
+            onMenuToggle={() => setIsSidebarOpen(true)}
           />
-        )}
-        <SettingsPanel
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          settings={settings}
-          onSettingsChange={handleSettingsChange}
-        />
+          <main className="relative flex-1 overflow-y-auto pb-12">
+            <div className="absolute inset-x-16 top-6 h-64 bg-gradient-to-r from-purple-300/40 via-white to-sky-200/40 blur-3xl pointer-events-none" />
+            <div className="relative z-10">
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <HomePage
+                      searchTerm={searchTerm}
+                      setSearchTerm={setSearchTerm}
+                      activeHeroFilter={activeHeroFilter}
+                      setActiveHeroFilter={setActiveHeroFilter}
+                      selectedSubject={selectedSubject}
+                      setSelectedSubject={setSelectedSubject}
+                      filteredGames={filteredGames}
+                      handlePlayGame={handlePlayGame}
+                      handleDeleteGame={handleDeleteGame}
+                      selectedGrade={selectedGrade}
+                      setSelectedGrade={setSelectedGrade}
+                    />
+                  }
+                />
+                <Route
+                  path="/projects"
+                  element={
+                    <ProjectsPage
+                      filteredGames={filteredGames}
+                      handlePlayGame={handlePlayGame}
+                      handleDeleteGame={handleDeleteGame}
+                      selectedGrade={selectedGrade}
+                      setSelectedGrade={setSelectedGrade}
+                      selectedSubject={selectedSubject}
+                      setSelectedSubject={setSelectedSubject}
+                      setSearchTerm={setSearchTerm}
+                      searchTerm={searchTerm}
+                    />
+                  }
+                />
+                <Route path="/templates" element={<TemplatesPage />} />
+                <Route
+                  path="/studio"
+                  element={
+                    <StudioPage
+                      onGameCreated={handleGameCreated}
+                      onGameSaved={handleGameSaved}
+                    />
+                  }
+                />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </div>
+          </main>
+          {activeGame && (
+            <GameViewer
+              game={activeGame}
+              onClose={handleCloseViewer}
+              onGameUpdate={handleGameUpdate}
+              onGameDetailsUpdate={handleGameDetailsUpdate}
+              onGameSaved={handleGameSaved}
+            />
+          )}
+          <SettingsPanel
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            settings={settings}
+            onSettingsChange={handleSettingsChange}
+          />
+        </div>
       </div>
-    </div>
+    </BrowserRouter>
   );
 }
 
