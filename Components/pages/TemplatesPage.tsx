@@ -1,5 +1,5 @@
 import React from 'react';
-import TemplatesList from '../dashboard/TemplatesList';
+import TemplatesList from '../templates/TemplatesList';
 
 const TemplatesPage: React.FC = () => {
     return (

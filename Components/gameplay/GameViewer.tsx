@@ -5,15 +5,8 @@ import { refineMinigameCode } from '../../Services/geminiService';
 import DatabaseService from '../../Services/DatabaseService';
 import { GRADES, SUBJECTS } from '../../constants';
 import { useSettings } from '../../Context/SettingsContext';
+import { useGame } from '../../Context/GameContext';
 
-
-interface GameViewerProps {
-    game: Minigame;
-    onClose: () => void;
-    onGameUpdate: (gameId: string, newHtmlContent: string) => void;
-    onGameDetailsUpdate: (gameId: string, updates: Partial<Omit<Minigame, 'id'>>) => void;
-    onGameSaved?: (game: Minigame) => void;
-}
 
 const CloseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
@@ -21,9 +14,13 @@ const CloseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     </svg>
 );
 
-const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, onGameDetailsUpdate, onGameSaved }) => {
+const GameViewer: React.FC = () => {
+    const { activeGame, closeViewer, updateGame, updateGameDetails, saveGame } = useGame();
+
+    if (!activeGame) return null;
+
     const [isShowing, setIsShowing] = useState(false);
-    const [currentGame, setCurrentGame] = useState<Minigame>(game);
+    const [currentGame, setCurrentGame] = useState<Minigame>(activeGame);
     const [messages, setMessages] = useState<ChatMessage[]>([
         { sender: 'system', text: 'Dies ist ein neues Spiel! Sag mir, was du ändern oder hinzufügen möchtest.' }
     ]);
@@ -38,7 +35,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
         setIsShowing(true);
         const handleEsc = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
-                onClose();
+                closeViewer();
             }
         };
         window.addEventListener('keydown', handleEsc);
@@ -46,11 +43,11 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
         return () => {
             window.removeEventListener('keydown', handleEsc);
         };
-    }, [onClose]);
+    }, [closeViewer]);
 
     useEffect(() => {
-        setCurrentGame(game);
-    }, [game]);
+        setCurrentGame(activeGame);
+    }, [activeGame]);
 
     const handleSendMessage = useCallback(async (message: string) => {
         const newMessages: ChatMessage[] = [...messages, { sender: 'user', text: message }];
@@ -61,7 +58,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
             const newHtmlContent = await refineMinigameCode(message, currentGame.htmlContent, settings);
             const updatedGame = { ...currentGame, htmlContent: newHtmlContent };
             setCurrentGame(updatedGame);
-            onGameUpdate(game.id, newHtmlContent);
+            updateGame(activeGame.id, newHtmlContent);
             setMessages([...newMessages, { sender: 'ai', text: "Ich habe das Spiel mit deinen Änderungen aktualisiert. Schau es dir an!" }]);
         } catch (error) {
             console.error(error);
@@ -70,12 +67,12 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
         } finally {
             setIsGenerating(false);
         }
-    }, [messages, currentGame, onGameUpdate, game.id, settings]);
+    }, [messages, currentGame, updateGame, activeGame.id, settings]);
 
-    const isAiGenerated = game.id.startsWith('gen-');
+    const isAiGenerated = activeGame.id.startsWith('gen-');
 
     const handleDetailChange = (field: 'grade' | 'subject', value: string | number) => {
-        onGameDetailsUpdate(game.id, { [field]: value });
+        updateGameDetails(activeGame.id, { [field]: value });
     };
 
     const handleSaveToDatabase = useCallback(async () => {
@@ -89,8 +86,8 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
             if (result.success && result.game) {
                 console.log('Game saved to database:', result.game.id);
                 setSaveStatus('success');
-                if (onGameSaved) {
-                    onGameSaved(result.game);
+                if (saveGame) {
+                    saveGame(result.game);
                 }
                 setTimeout(() => setSaveStatus('idle'), 3000);
             } else {
@@ -107,7 +104,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
         } finally {
             setIsSaving(false);
         }
-    }, [currentGame, onGameSaved, databaseService]);
+    }, [currentGame, saveGame, databaseService]);
 
     const canBeSaved = isAiGenerated;
 
@@ -117,16 +114,16 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
             aria-modal="true"
             role="dialog"
         >
-            <div className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm" onClick={closeViewer}></div>
 
             <div className={`relative w-full max-w-[95vw] h-[95vh] flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-2xl transition-all duration-300 ${isShowing ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                 <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700 rounded-t-2xl flex-shrink-0">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex-shrink-0 pr-4">{game.title}</h2>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex-shrink-0 pr-4">{activeGame.title}</h2>
 
                     {isAiGenerated && (
                         <div className="flex items-center gap-4 flex-shrink min-w-0">
                             <select
-                                value={game.grade}
+                                value={activeGame.grade}
                                 onChange={(e) => handleDetailChange('grade', parseInt(e.target.value, 10))}
                                 className="custom-select block w-full max-w-[150px] text-sm pl-2 py-1 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
                                 aria-label="Klasse ändern"
@@ -136,7 +133,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
                                 ))}
                             </select>
                             <select
-                                value={game.subject}
+                                value={activeGame.subject}
                                 onChange={(e) => handleDetailChange('subject', e.target.value)}
                                 className="custom-select block w-full max-w-[150px] text-sm pl-2 py-1 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 rounded-md bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100"
                                 aria-label="Fach ändern"
@@ -156,8 +153,8 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
                                 onClick={handleSaveToDatabase}
                                 disabled={isSaving || saveStatus === 'success'}
                                 className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:scale-100 ${saveStatus === 'success'
-                                        ? 'bg-green-600 shadow-green-400/40'
-                                        : 'bg-gradient-to-r from-green-500 to-emerald-500 shadow-green-400/40'
+                                    ? 'bg-green-600 shadow-green-400/40'
+                                    : 'bg-gradient-to-r from-green-500 to-emerald-500 shadow-green-400/40'
                                     }`}
                                 aria-label={saveStatus === 'success' ? 'Gespeichert' : 'In Datenbank speichern'}
                             >
@@ -181,7 +178,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
                                             <path fillRule="evenodd" d="M17.5 3.5A2.5 2.5 0 0 0 15 6v1.5a.5.5 0 0 1-1 0V6a3.5 3.5 0 1 1 7 0v3.5a5.5 5.5 0 0 1-4.5 5.397V20a.5.5 0 0 1-1 0v-5.103A5.5 5.5 0 0 1 11 9.5V6A5 5 0 0 0 6 6v9a6.5 6.5 0 0 0 5.5 6.397V20a.5.5 0 0 1-1 0v-1.603A7.5 7.5 0 0 1 5 15V6a7 7 0 0 1 14 0v3.5a2.5 2.5 0 0 0 2.5-2.5V6a2.5 2.5 0 0 0-2.5-2.5h-1a.5.5 0 0 1 0-1h1A3.5 3.5 0 0 1 23 6v3.5A3.5 3.5 0 0 1 19.5 13H19a.5.5 0 0 1 0-1h.5A2.5 2.5 0 0 0 22 9.5V6a2.5 2.5 0 0 0-2.5-2.5h-1a.5.5 0 0 1 0-1h1ZM8.5 6A3.5 3.5 0 0 1 12 9.5v5A4.5 4.5 0 0 1 7.5 19h-1a.5.5 0 0 1 0-1h1A3.5 3.5 0 0 0 11 14.5v-5A2.5 2.5 0 0 0 8.5 7h-1a.5.5 0 0 1 0-1h1Z" clipRule="evenodd" />
                                         </svg>
-                                        {game.isSavedToDB ? 'Datenbank aktualisieren' : 'In Datenbank speichern'}
+                                        {activeGame.isSavedToDB ? 'Datenbank aktualisieren' : 'In Datenbank speichern'}
                                     </>
                                 )}
                             </button>
@@ -193,7 +190,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
                         </div>
                     )}
 
-                    {game.isSavedToDB && !canBeSaved && (
+                    {activeGame.isSavedToDB && !canBeSaved && (
                         <div className="inline-flex items-center gap-2 rounded-full bg-green-50 text-green-600 px-3 py-1 text-xs font-semibold shadow-inner shadow-green-200/40">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="h-4 w-4">
                                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
@@ -203,7 +200,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
                     )}
 
                     <button
-                        onClick={onClose}
+                        onClick={closeViewer}
                         className="ml-4 p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-800 dark:hover:text-white transition-colors"
                         aria-label="Spielansicht schließen"
                     >
@@ -215,7 +212,7 @@ const GameViewer: React.FC<GameViewerProps> = ({ game, onClose, onGameUpdate, on
                         <iframe
                             key={currentGame.htmlContent}
                             srcDoc={currentGame.htmlContent}
-                            title={currentGame.title}
+                            title={activeGame.title}
                             className="w-full h-full border-0"
                             sandbox="allow-scripts allow-forms"
                         />

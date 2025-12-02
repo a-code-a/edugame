@@ -1,30 +1,9 @@
 import React from 'react';
-import LibrarySection from '../dashboard/LibrarySection';
-import { Minigame } from '../../types';
+import LibrarySection from '../minigames/LibrarySection';
+import { useGame } from '../../Context/GameContext';
 
-interface ProjectsPageProps {
-    filteredGames: Minigame[];
-    handlePlayGame: (game: Minigame) => void;
-    handleDeleteGame: (gameId: string) => void;
-    selectedGrade: string;
-    setSelectedGrade: (grade: string) => void;
-    selectedSubject: string;
-    setSelectedSubject: (subject: string) => void;
-    setSearchTerm: (term: string) => void;
-    searchTerm: string;
-}
-
-const ProjectsPage: React.FC<ProjectsPageProps> = ({
-    filteredGames,
-    handlePlayGame,
-    handleDeleteGame,
-    selectedGrade,
-    setSelectedGrade,
-    selectedSubject,
-    setSelectedSubject,
-    setSearchTerm,
-    searchTerm
-}) => {
+const ProjectsPage: React.FC = () => {
+    const { filteredGames, playGame, searchTerm, setSearchTerm } = useGame();
     // Mock data for rankings/most used
     const mostUsedGames = filteredGames.slice(0, 3); // Just taking first 3 as mock "most used"
 
@@ -66,7 +45,7 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {mostUsedGames.map((game, index) => (
-                        <div key={game.id} className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex items-center gap-4 hover:shadow-md transition-all cursor-pointer" onClick={() => handlePlayGame(game)}>
+                        <div key={game.id} className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm flex items-center gap-4 hover:shadow-md transition-all cursor-pointer" onClick={() => playGame(game)}>
                             <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100 text-purple-600 flex items-center justify-center font-bold text-xl">
                                 #{index + 1}
                             </div>
@@ -90,16 +69,7 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({
             {/* Main Library Section */}
             <section>
                 <h2 className="text-xl font-bold text-slate-900 mb-4">Alle Spiele</h2>
-                <LibrarySection
-                    filteredGames={filteredGames}
-                    handlePlayGame={handlePlayGame}
-                    handleDeleteGame={handleDeleteGame}
-                    selectedGrade={selectedGrade}
-                    setSelectedGrade={setSelectedGrade}
-                    selectedSubject={selectedSubject}
-                    setSelectedSubject={setSelectedSubject}
-                    setSearchTerm={setSearchTerm}
-                />
+                <LibrarySection />
             </section>
         </div>
     );

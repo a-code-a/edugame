@@ -2,24 +2,18 @@ import React from 'react';
 import SparkleIcon from '../icons/SparkleIcon';
 import { SubjectIcons } from '../icons/SubjectIcons';
 import { HERO_FILTERS, SUBJECT_SHORTCUTS } from '../../constants';
+import { useGame } from '../../Context/GameContext';
 
 interface HeroSectionProps {
-    searchTerm: string;
-    setSearchTerm: (term: string) => void;
     activeHeroFilter: string;
     setActiveHeroFilter: (filter: string) => void;
-    selectedSubject: string;
-    setSelectedSubject: (subject: string) => void;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({
-    searchTerm,
-    setSearchTerm,
     activeHeroFilter,
     setActiveHeroFilter,
-    selectedSubject,
-    setSelectedSubject,
 }) => {
+    const { searchTerm, setSearchTerm, selectedSubject, setSelectedSubject } = useGame();
     return (
         <section className="relative rounded-[36px] bg-gradient-to-br from-[#cddfff] via-white to-[#f8d3ff] border border-white/60 shadow-[0_25px_70px_-35px_rgba(132,97,255,0.55)] overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.9),rgba(255,255,255,0)_55%),radial-gradient(circle_at_80%_0%,rgba(255,255,255,0.9),rgba(255,255,255,0)_45%)]" />
@@ -42,8 +36,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                                 type="button"
                                 onClick={() => setActiveHeroFilter(item.id)}
                                 className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${activeHeroFilter === item.id
-                                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-400/40'
-                                        : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow'
+                                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-400/40'
+                                    : 'bg-white/70 text-slate-600 hover:bg-white hover:shadow'
                                     }`}
                             >
                                 {item.label}
@@ -84,8 +78,8 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                             type="button"
                             onClick={() => setSelectedSubject(shortcut.value)}
                             className={`flex items-center gap-3 rounded-2xl px-5 py-3 text-sm font-semibold shadow-sm transition-all duration-200 ${selectedSubject === shortcut.value
-                                    ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-400/50'
-                                    : `bg-gradient-to-r ${shortcut.gradient} text-slate-700 hover:shadow-md`
+                                ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg shadow-purple-400/50'
+                                : `bg-gradient-to-r ${shortcut.gradient} text-slate-700 hover:shadow-md`
                                 }`}
                         >
                             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/70 text-slate-600">

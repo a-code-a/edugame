@@ -1,46 +1,23 @@
 import React from 'react';
-import HeroSection from '../dashboard/HeroSection';
-import LibrarySection from '../dashboard/LibrarySection';
-import TemplatesList from '../dashboard/TemplatesList';
-import { Minigame } from '../../types';
+import HeroSection from '../home/HeroSection';
+import LibrarySection from '../minigames/LibrarySection';
+import TemplatesList from '../templates/TemplatesList';
 import { Link } from 'react-router-dom';
 
 interface HomePageProps {
-    searchTerm: string;
-    setSearchTerm: (term: string) => void;
     activeHeroFilter: string;
     setActiveHeroFilter: (filter: string) => void;
-    selectedSubject: string;
-    setSelectedSubject: (subject: string) => void;
-    filteredGames: Minigame[];
-    handlePlayGame: (game: Minigame) => void;
-    handleDeleteGame: (gameId: string) => void;
-    selectedGrade: string;
-    setSelectedGrade: (grade: string) => void;
 }
 
 const HomePage: React.FC<HomePageProps> = ({
-    searchTerm,
-    setSearchTerm,
     activeHeroFilter,
     setActiveHeroFilter,
-    selectedSubject,
-    setSelectedSubject,
-    filteredGames,
-    handlePlayGame,
-    handleDeleteGame,
-    selectedGrade,
-    setSelectedGrade,
 }) => {
     return (
         <div className="px-4 sm:px-8 lg:px-16 py-8 space-y-12">
             <HeroSection
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
                 activeHeroFilter={activeHeroFilter}
                 setActiveHeroFilter={setActiveHeroFilter}
-                selectedSubject={selectedSubject}
-                setSelectedSubject={setSelectedSubject}
             />
 
             <div className="max-w-[1600px] mx-auto">
@@ -49,16 +26,7 @@ const HomePage: React.FC<HomePageProps> = ({
                         <div className="flex items-center justify-between">
                             <h2 className="text-2xl font-bold text-slate-900">Bibliothek</h2>
                         </div>
-                        <LibrarySection
-                            filteredGames={filteredGames}
-                            handlePlayGame={handlePlayGame}
-                            handleDeleteGame={handleDeleteGame}
-                            selectedGrade={selectedGrade}
-                            setSelectedGrade={setSelectedGrade}
-                            selectedSubject={selectedSubject}
-                            setSelectedSubject={setSelectedSubject}
-                            setSearchTerm={setSearchTerm}
-                        />
+                        <LibrarySection />
                     </div>
                 )}
 

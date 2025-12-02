@@ -1,13 +1,9 @@
 import React from 'react';
 import VibeCoder from '../ai/VibeCoder';
-import { Minigame } from '../../types';
+import { useGame } from '../../Context/GameContext';
 
-interface StudioPageProps {
-    onGameCreated: (game: Minigame) => void;
-    onGameSaved: (game: Minigame) => void;
-}
-
-const StudioPage: React.FC<StudioPageProps> = ({ onGameCreated, onGameSaved }) => {
+const StudioPage: React.FC = () => {
+    const { createGame, saveGame } = useGame();
     return (
         <div className="px-4 sm:px-8 lg:px-16 py-8 max-w-[1600px] mx-auto">
             <div className="max-w-4xl mx-auto">
@@ -16,7 +12,7 @@ const StudioPage: React.FC<StudioPageProps> = ({ onGameCreated, onGameSaved }) =
                     Erstelle deine eigenen Lernspiele mit der Kraft der künstlichen Intelligenz.
                     Beschreibe einfach, was du möchtest, und der Vibe Coder erledigt den Rest.
                 </p>
-                <VibeCoder onGameCreated={onGameCreated} onGameSaved={onGameSaved} />
+                <VibeCoder onGameCreated={createGame} onGameSaved={saveGame} />
             </div>
         </div>
     );
