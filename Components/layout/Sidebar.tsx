@@ -73,8 +73,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
   const navigate = useNavigate();
 
   const handleCreateClick = () => {
-    navigate('/studio');
-    onCreateClick(); // Keep this if it does other things, but mainly we want to navigate
+    navigate('/');
+    onCreateClick();
   };
 
   return (
@@ -135,9 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
             <IconButton label="Vorlagen" to="/templates">
               <IconTemplates className="h-5 w-5" />
             </IconButton>
-            <IconButton label="KI-Studio" to="/studio">
-              <IconSparkles className="h-5 w-5" />
-            </IconButton>
+
           </div>
         </nav>
       </aside>

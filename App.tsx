@@ -10,11 +10,9 @@ import SettingsPanel from '@/Components/settings/SettingsPanel';
 import HomePage from '@/Components/pages/HomePage';
 import ProjectsPage from '@/Components/pages/ProjectsPage';
 import TemplatesPage from '@/Components/pages/TemplatesPage';
-import StudioPage from '@/Components/pages/StudioPage';
 
 function AppContent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [activeHeroFilter, setActiveHeroFilter] = useState<string>('library');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { settings, updateSettings } = useSettings();
   const { activeGame } = useGame();
@@ -46,22 +44,14 @@ function AppContent() {
               <Routes>
                 <Route
                   path="/"
-                  element={
-                    <HomePage
-                      activeHeroFilter={activeHeroFilter}
-                      setActiveHeroFilter={setActiveHeroFilter}
-                    />
-                  }
+                  element={<HomePage />}
                 />
                 <Route
                   path="/projects"
                   element={<ProjectsPage />}
                 />
                 <Route path="/templates" element={<TemplatesPage />} />
-                <Route
-                  path="/studio"
-                  element={<StudioPage />}
-                />
+
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </div>
