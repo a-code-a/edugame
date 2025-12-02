@@ -6,7 +6,6 @@ interface SidebarProps {
   isMobileOpen: boolean;
   onCloseMobile: () => void;
   onCreateClick: () => void;
-  recentGames: Minigame[];
 }
 
 const IconButton: React.FC<React.PropsWithChildren<{ label: string; to: string }>> = ({ label, to, children }) => (
@@ -70,7 +69,7 @@ const IconClose: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
-const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreateClick, recentGames }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreateClick }) => {
   const navigate = useNavigate();
 
   const handleCreateClick = () => {
@@ -139,43 +138,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
             <IconButton label="KI-Studio" to="/studio">
               <IconSparkles className="h-5 w-5" />
             </IconButton>
-          </div>
-
-          <div className="mt-8">
-            <div className="flex items-center justify-between px-2">
-              <p className="text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
-                Letzte Spiele
-              </p>
-              <button
-                type="button"
-                className="text-xs font-medium text-purple-600 hover:text-purple-700 dark:text-purple-300 dark:hover:text-purple-200"
-              >
-                Alle anzeigen
-              </button>
-            </div>
-            <ul className="mt-3 space-y-3">
-              {recentGames.slice(0, 6).map((game) => (
-                <li
-                  key={game.id}
-                  className="flex items-center gap-3 rounded-xl border border-white/60 dark:border-slate-800/70 bg-white/80 dark:bg-slate-900/50 px-3 py-2.5 hover:border-purple-200 hover:shadow-md transition-all duration-200"
-                >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-sky-100 to-blue-200 text-blue-700 font-semibold text-sm">
-                    {game.title.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">
-                      {game.title}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Klasse {game.grade} · {game.subject}
-                    </p>
-                  </div>
-                </li>
-              ))}
-              {recentGames.length === 0 && (
-                <li className="text-xs text-slate-400 px-3 py-2">Noch keine Spiele · Erstelle eines oben</li>
-              )}
-            </ul>
           </div>
         </nav>
       </aside>

@@ -39,8 +39,6 @@ function AppContent() {
       .sort((a, b) => (a.id.startsWith('gen-') && !b.id.startsWith('gen-') ? -1 : 1));
   }, [minigames, selectedGrade, selectedSubject, searchTerm]);
 
-  const recentGames = useMemo(() => minigames.slice(0, 8), [minigames]);
-
   const handlePlayGame = (game: Minigame) => {
     setActiveGame(game);
   };
@@ -149,7 +147,6 @@ function AppContent() {
           isMobileOpen={isSidebarOpen}
           onCloseMobile={() => setIsSidebarOpen(false)}
           onCreateClick={handleCreateFromSidebar}
-          recentGames={recentGames}
         />
         <div className="flex-1 flex flex-col relative overflow-hidden">
           <Header
