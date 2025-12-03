@@ -1,5 +1,6 @@
 import React from 'react';
 import { Minigame } from '../../types';
+import DatabaseService from '../../Services/DatabaseService';
 
 interface MinigameCardProps {
   game: Minigame;
@@ -111,7 +112,7 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
     // Increment play count in background
     if (isSavedToDB) {
       try {
-        const { success, game: updatedGame } = await import('../../Services/DatabaseService').then(m => m.default.getInstance().incrementPlayCount(game.id));
+        const { success, game: updatedGame } = await DatabaseService.getInstance().incrementPlayCount(game.id);
         if (success && updatedGame) {
           setLocalGame(updatedGame);
         }
@@ -129,7 +130,7 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
     setLocalGame(prev => ({ ...prev, likes: (prev.likes || 0) + 1 }));
 
     try {
-      const { success, game: updatedGame } = await import('../../Services/DatabaseService').then(m => m.default.getInstance().toggleLike(game.id));
+      const { success, game: updatedGame } = await DatabaseService.getInstance().toggleLike(game.id);
       if (success && updatedGame) {
         setLocalGame(updatedGame);
       }
@@ -148,7 +149,7 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
     setLocalGame(prev => ({ ...prev, dislikes: (prev.dislikes || 0) + 1 }));
 
     try {
-      const { success, game: updatedGame } = await import('../../Services/DatabaseService').then(m => m.default.getInstance().toggleDislike(game.id));
+      const { success, game: updatedGame } = await DatabaseService.getInstance().toggleDislike(game.id);
       if (success && updatedGame) {
         setLocalGame(updatedGame);
       }
