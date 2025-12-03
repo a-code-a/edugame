@@ -137,6 +137,75 @@ class DatabaseService {
     }
   }
 
+  public async incrementPlayCount(gameId: string): Promise<SaveGameResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
+        method: 'POST',
+        headers: {
+          'userId': this.userId,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const updatedGame = await response.json();
+      return { success: true, game: updatedGame };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
+  public async toggleLike(gameId: string): Promise<SaveGameResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/games/${gameId}/like`, {
+        method: 'POST',
+        headers: {
+          'userId': this.userId,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const updatedGame = await response.json();
+      return { success: true, game: updatedGame };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
+  public async toggleDislike(gameId: string): Promise<SaveGameResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/games/${gameId}/dislike`, {
+        method: 'POST',
+        headers: {
+          'userId': this.userId,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const updatedGame = await response.json();
+      return { success: true, game: updatedGame };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
   public setUserId(userId: string): void {
     this.userId = userId;
   }

@@ -93,9 +93,69 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
   const isAiGenerated = game.id.startsWith('gen-');
   const isSavedToDB = game.isSavedToDB;
 
+  const [localGame, setLocalGame] = React.useState(game);
+
+  // Update local state when prop changes
+  React.useEffect(() => {
+    setLocalGame(game);
+  }, [game]);
+
   const handleDelete = () => {
     if (onDelete && isAiGenerated) {
       onDelete(game.id);
+    }
+  };
+
+  const handlePlay = async () => {
+    onPlay(game);
+    // Increment play count in background
+    if (isSavedToDB) {
+      try {
+        const { success, game: updatedGame } = await import('../../Services/DatabaseService').then(m => m.default.getInstance().incrementPlayCount(game.id));
+        if (success && updatedGame) {
+          setLocalGame(updatedGame);
+        }
+      } catch (error) {
+        console.error('Failed to increment play count', error);
+      }
+    }
+  };
+
+  const handleLike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isSavedToDB) return;
+
+    // Optimistic update
+    setLocalGame(prev => ({ ...prev, likes: (prev.likes || 0) + 1 }));
+
+    try {
+      const { success, game: updatedGame } = await import('../../Services/DatabaseService').then(m => m.default.getInstance().toggleLike(game.id));
+      if (success && updatedGame) {
+        setLocalGame(updatedGame);
+      }
+    } catch (error) {
+      console.error('Failed to like game', error);
+      // Revert on failure
+      setLocalGame(prev => ({ ...prev, likes: (prev.likes || 0) - 1 }));
+    }
+  };
+
+  const handleDislike = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isSavedToDB) return;
+
+    // Optimistic update
+    setLocalGame(prev => ({ ...prev, dislikes: (prev.dislikes || 0) + 1 }));
+
+    try {
+      const { success, game: updatedGame } = await import('../../Services/DatabaseService').then(m => m.default.getInstance().toggleDislike(game.id));
+      if (success && updatedGame) {
+        setLocalGame(updatedGame);
+      }
+    } catch (error) {
+      console.error('Failed to dislike game', error);
+      // Revert on failure
+      setLocalGame(prev => ({ ...prev, dislikes: (prev.dislikes || 0) - 1 }));
     }
   };
 
@@ -110,12 +170,12 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
                   <path d="M10.75 10.818v2.614A3.13 3.13 0 0011.888 13c.482-.315.612-.648.612-.875 0-.227-.13-.56-.612-.875a3.13 3.13 0 00-1.138-.432zM8.33 8.62c.053.055.115.11.184.164.208.16.46.284.736.363V6.603a2.45 2.45 0 00-.35.13c-.14.065-.27.143-.386.233-.377.292-.514.627-.514.909 0 .184.058.39.202.592.037.051.08.102.128.152z" />
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-6a.75.75 0 01.75.75v.316a3.78 3.78 0 011.653.713c.426.33.744.74.925 1.2a.75.75 0 01-1.395.55 1.35 1.35 0 00-.447-.563 2.187 2.187 0 00-.736-.363V9.3c.698.093 1.383.32 1.959.696.787.514 1.29 1.27 1.29 2.13 0 .86-.504 1.616-1.29 2.13-.576.377-1.261.603-1.96.696v.299a.75.75 0 11-1.5 0v-.3c-.697-.092-1.382-.318-1.958-.695-.482-.315-.857-.717-1.078-1.188a.75.75 0 111.359-.636c.08.173.245.376.54.569.313.205.706.353 1.138.432v-2.748a3.782 3.782 0 01-1.653-.713C6.9 9.433 6.5 8.681 6.5 7.875c0-.805.4-1.558 1.097-2.096a3.78 3.78 0 011.653-.713V4.75A.75.75 0 0110 4z" clipRule="evenodd" />
                 </svg>
-                Klasse {game.grade}
+                Klasse {localGame.grade}
               </span>
-              <SubjectBadge subject={game.subject} />
+              <SubjectBadge subject={localGame.subject} />
             </div>
-            <h3 className="text-base font-semibold text-slate-900 line-clamp-2 mb-1">{game.title}</h3>
-            <p className="text-sm text-slate-500 line-clamp-2">{game.description}</p>
+            <h3 className="text-base font-semibold text-slate-900 line-clamp-2 mb-1">{localGame.title}</h3>
+            <p className="text-sm text-slate-500 line-clamp-2">{localGame.description}</p>
           </div>
           {isAiGenerated && onDelete && (
             <button
@@ -131,28 +191,59 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {isAiGenerated && (
-            <div className="inline-flex items-center gap-1.5 rounded-lg bg-purple-50 text-purple-600 px-2.5 py-1 text-xs font-medium">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
-                <path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.684a1 1 0 01.633.632l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01.633-.633l2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z" />
-              </svg>
-              AI Generiert
-            </div>
-          )}
+        <div className="flex flex-wrap gap-2 items-center justify-between">
+          <div className="flex gap-2">
+            {isAiGenerated && (
+              <div className="inline-flex items-center gap-1.5 rounded-lg bg-purple-50 text-purple-600 px-2.5 py-1 text-xs font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                  <path d="M15.98 1.804a1 1 0 00-1.96 0l-.24 1.192a1 1 0 01-.784.785l-1.192.238a1 1 0 000 1.962l1.192.238a1 1 0 01.785.785l.238 1.192a1 1 0 001.962 0l.238-1.192a1 1 0 01.785-.785l1.192-.238a1 1 0 000-1.962l-1.192-.238a1 1 0 01-.785-.785l-.238-1.192zM6.949 5.684a1 1 0 00-1.898 0l-.683 2.051a1 1 0 01-.633.633l-2.051.683a1 1 0 000 1.898l2.051.684a1 1 0 01.633.632l.683 2.051a1 1 0 001.898 0l.683-2.051a1 1 0 01.633-.633l2.051-.683a1 1 0 000-1.898l-2.051-.683a1 1 0 01-.633-.633L6.95 5.684zM13.949 13.684a1 1 0 00-1.898 0l-.184.551a1 1 0 01-.632.633l-.551.183a1 1 0 000 1.898l.551.183a1 1 0 01.633.633l.183.551a1 1 0 001.898 0l.184-.551a1 1 0 01.632-.633l.551-.183a1 1 0 000-1.898l-.551-.184a1 1 0 01-.633-.632l-.183-.551z" />
+                </svg>
+                AI Generiert
+              </div>
+            )}
+
+            {isSavedToDB && (
+              <div className="inline-flex items-center gap-1.5 rounded-lg bg-green-50 text-green-600 px-2.5 py-1 text-xs font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
+                </svg>
+                Gespeichert
+              </div>
+            )}
+          </div>
 
           {isSavedToDB && (
-            <div className="inline-flex items-center gap-1.5 rounded-lg bg-green-50 text-green-600 px-2.5 py-1 text-xs font-medium">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
-              </svg>
-              Gespeichert
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <span className="flex items-center gap-1" title="Gespielt">
+                <PlayIcon className="h-3 w-3" />
+                {localGame.playCount || 0}
+              </span>
+              <button
+                onClick={handleLike}
+                className="flex items-center gap-1 hover:text-indigo-600 transition-colors"
+                title="Gefällt mir"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3 w-3">
+                  <path d="M1 8.25a1.25 1.25 0 112.5 0v7.5a1.25 1.25 0 11-2.5 0v-7.5zM11 3V1.7c0-.268.14-.526.395-.607A2 2 0 0114 3c0 .995-.182 1.948-.514 2.826-.204.54.166 1.174.744 1.174h2.52c1.243 0 2.261 1.01 2.146 2.247a23.864 23.864 0 01-1.341 5.974C17.153 16.323 16.072 17 14.9 17h-3.192a3 3 0 01-1.341-.317l-2.734-1.366A3 3 0 006.292 15H5V8h.963c.685 0 1.258-.483 1.612-1.068a4.011 4.011 0 012.166-1.738L9.78 5.19a2 2 0 011.22 0l.5.11z" />
+                </svg>
+                {localGame.likes || 0}
+              </button>
+              <button
+                onClick={handleDislike}
+                className="flex items-center gap-1 hover:text-red-600 transition-colors"
+                title="Gefällt mir nicht"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3 w-3">
+                  <path d="M18.905 12.75a1.25 1.25 0 01-2.5 0v-7.5a1.25 1.25 0 112.5 0v7.5zM8.905 17v1.3c0 .268-.14.526-.395.607A2 2 0 015.905 17c0-.995.182-1.948.514-2.826.204-.54-.166-1.174-.744-1.174h-2.52c-1.243 0-2.261-1.01-2.146-2.247.193-2.125.663-4.175 1.341-5.974C2.752 3.677 3.833 3 5.005 3h3.192a3 3 0 011.341.317l2.734 1.366A3 3 0 0013.613 5h1.292v7h-.963c-.685 0-1.258.483-1.612 1.068a4.011 4.011 0 01-2.166 1.738l-.257.09a2 2 0 01-1.22 0l-.5-.11z" />
+                </svg>
+                {localGame.dislikes || 0}
+              </button>
             </div>
           )}
         </div>
 
         <button
-          onClick={() => onPlay(game)}
+          onClick={handlePlay}
           className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 py-2.5 text-sm font-semibold text-white shadow-md hover:shadow-lg transition-all duration-200"
         >
           <PlayIcon className="h-4 w-4" />

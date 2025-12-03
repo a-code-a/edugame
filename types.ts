@@ -10,6 +10,9 @@ export interface Minigame {
   createdAt?: string;
   updatedAt?: string;
   userId?: string;
+  playCount?: number;
+  likes?: number;
+  dislikes?: number;
 }
 
 export interface Settings {

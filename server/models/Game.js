@@ -35,6 +35,18 @@ const gameSchema = new mongoose.Schema({
     type: String,
     required: true,
     index: true
+  },
+  playCount: {
+    type: Number,
+    default: 0
+  },
+  likes: {
+    type: Number,
+    default: 0
+  },
+  dislikes: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true // This automatically adds createdAt and updatedAt fields

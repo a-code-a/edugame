@@ -112,4 +112,85 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// POST /api/games/:id/play - Increment play count
+router.post('/:id/play', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers.userid || req.query.userId;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const game = await Game.findOneAndUpdate(
+      { id, userId },
+      { $inc: { playCount: 1 } },
+      { new: true }
+    );
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    res.json(game);
+  } catch (error) {
+    console.error('Error incrementing play count:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/games/:id/like - Increment likes
+router.post('/:id/like', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers.userid || req.query.userId;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const game = await Game.findOneAndUpdate(
+      { id, userId },
+      { $inc: { likes: 1 } },
+      { new: true }
+    );
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    res.json(game);
+  } catch (error) {
+    console.error('Error incrementing likes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/games/:id/dislike - Increment dislikes
+router.post('/:id/dislike', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers.userid || req.query.userId;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const game = await Game.findOneAndUpdate(
+      { id, userId },
+      { $inc: { dislikes: 1 } },
+      { new: true }
+    );
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    res.json(game);
+  } catch (error) {
+    console.error('Error incrementing dislikes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
