@@ -116,14 +116,10 @@ router.put('/:id', async (req, res) => {
 router.post('/:id/play', async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers.userid || req.query.userId;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
+    console.log(`Incrementing play count for game: ${id}`);
 
     const game = await Game.findOneAndUpdate(
-      { id, userId },
+      { id },
       { $inc: { playCount: 1 } },
       { new: true }
     );
@@ -143,14 +139,10 @@ router.post('/:id/play', async (req, res) => {
 router.post('/:id/like', async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers.userid || req.query.userId;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
+    console.log(`Incrementing likes for game: ${id}`);
 
     const game = await Game.findOneAndUpdate(
-      { id, userId },
+      { id },
       { $inc: { likes: 1 } },
       { new: true }
     );
@@ -170,14 +162,10 @@ router.post('/:id/like', async (req, res) => {
 router.post('/:id/dislike', async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers.userid || req.query.userId;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
+    console.log(`Incrementing dislikes for game: ${id}`);
 
     const game = await Game.findOneAndUpdate(
-      { id, userId },
+      { id },
       { $inc: { dislikes: 1 } },
       { new: true }
     );
