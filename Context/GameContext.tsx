@@ -10,9 +10,11 @@ interface GameContextType {
     selectedGrade: string;
     selectedSubject: string;
     searchTerm: string;
+    sortOption: 'newest' | 'likes' | 'plays';
     setSelectedGrade: (grade: string) => void;
     setSelectedSubject: (subject: string) => void;
     setSearchTerm: (term: string) => void;
+    setSortOption: (option: 'newest' | 'likes' | 'plays') => void;
     playGame: (game: Minigame) => void;
     closeViewer: () => void;
     createGame: (newGame: Minigame) => void;
@@ -29,6 +31,7 @@ export const GameProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
     const [selectedGrade, setSelectedGrade] = useState<string>('All');
     const [selectedSubject, setSelectedSubject] = useState<string>('All');
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortOption, setSortOption] = useState<'newest' | 'likes' | 'plays'>('newest');
     const [activeGame, setActiveGame] = useState<Minigame | null>(null);
     const databaseService = DatabaseService.getInstance();
 
@@ -43,8 +46,25 @@ export const GameProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
                     game.description.toLowerCase().includes(searchTerm.toLowerCase());
                 return gradeMatch && subjectMatch && searchMatch;
             })
-            .sort((a, b) => (a.id.startsWith('gen-') && !b.id.startsWith('gen-') ? -1 : 1));
-    }, [minigames, selectedGrade, selectedSubject, searchTerm]);
+            .sort((a, b) => {
+                // First prioritize generated games if needed, or keep existing logic
+                // The original logic was: (a.id.startsWith('gen-') && !b.id.startsWith('gen-') ? -1 : 1)
+                // We can keep that as a secondary sort or replace it.
+                // Let's implement the requested sorting:
+
+                if (sortOption === 'likes') {
+                    return (b.likes || 0) - (a.likes || 0);
+                }
+                if (sortOption === 'plays') {
+                    return (b.playCount || 0) - (a.playCount || 0);
+                }
+                // Default to newest (based on createdAt or id if createdAt is missing)
+                // Assuming newer games have later dates.
+                const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                return dateB - dateA;
+            });
+    }, [minigames, selectedGrade, selectedSubject, searchTerm, sortOption]);
 
     const playGame = (game: Minigame) => {
         setActiveGame(game);
@@ -148,9 +168,11 @@ export const GameProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
                 selectedGrade,
                 selectedSubject,
                 searchTerm,
+                sortOption,
                 setSelectedGrade,
                 setSelectedSubject,
                 setSearchTerm,
+                setSortOption,
                 playGame,
                 closeViewer,
                 createGame,
