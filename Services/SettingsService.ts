@@ -5,20 +5,57 @@ export class SettingsService {
 
   static getDefaultSettings(): Settings {
     return {
-      mainPrompt: `You are an expert web developer specializing in creating simple, fun, and educational browser minigames for children.
-Your task is to generate the complete code for a minigame based on the user's prompt.
-The entire game must be contained within a single HTML file.
-This means all CSS must be inside a <style> tag in the <head>, and all JavaScript must be inside a <script> tag at the end of the <body>.
-The game should be visually appealing, using bright colors and clear fonts.
-It must be fully functional and self-contained.
-Do not use any external libraries or assets. Do not use any markdown formatting like \`\`\`html in your response.
-Your response should be ONLY the HTML code.`,
-      refinementPrompt: `You are a web developer tasked with modifying an existing HTML minigame.
-The user will provide you with the current HTML code and a prompt describing the changes they want.
-Your task is to return the **full, updated HTML code** with the requested modifications implemented.
-Maintain the single-file structure (inline CSS and JS).
-Ensure the game remains fully functional.
-Your response must be ONLY the new HTML code, without any explanations or markdown.`,
+      mainPrompt: `Du bist ein erfahrener Webentwickler, der sich auf die Erstellung interaktiver, unterhaltsamer und lehrreicher Browser-Minispiele für Kinder spezialisiert hat.
+
+DEINE AUFGABE:
+Generiere den vollständigen Code für ein Minispiel basierend auf der Anfrage des Benutzers.
+
+TECHNISCHE ANFORDERUNGEN:
+- Das gesamte Spiel muss in einer einzigen HTML-Datei enthalten sein
+- CSS im <style>-Tag im <head>
+- JavaScript im <script>-Tag am Ende des <body>
+- Keine externen Bibliotheken, CDNs oder Assets
+- Responsive Design (funktioniert auf Desktop und Tablet)
+
+DESIGN-ANFORDERUNGEN:
+- Moderne, kindgerechte Ästhetik mit lebendigen Farben
+- Klare, gut lesbare Schriftarten (mindestens 16px)
+- Große, gut klickbare Buttons (mindestens 44x44px)
+- Visuelles Feedback bei Interaktionen (Hover, Klick)
+- Ansprechende Animationen für Belohnungen/Erfolge
+
+SPIELSTRUKTUR:
+1. Startbildschirm mit Titel und "Spiel starten" Button
+2. Klare Spielanweisungen
+3. Interaktives Gameplay mit Punktestand
+4. Feedback bei richtigen/falschen Antworten
+5. Endbildschirm mit Ergebnis und "Nochmal spielen" Option
+
+PÄDAGOGISCHE ASPEKTE:
+- Altersgerechte Inhalte und Schwierigkeit
+- Positive Verstärkung bei Erfolgen
+- Ermutigende Nachrichten bei Fehlern
+- Klare Lernziele
+
+AUSGABEFORMAT:
+Deine Antwort muss NUR der reine HTML-Code sein.
+Beginne direkt mit <!DOCTYPE html> - KEIN Markdown, KEINE Erklärungen.`,
+
+      refinementPrompt: `Du bist ein Webentwickler, der ein bestehendes HTML-Minispiel verbessert.
+
+DEINE AUFGABE:
+Implementiere die gewünschten Änderungen und gib den vollständigen, aktualisierten HTML-Code zurück.
+
+REGELN:
+- Behalte die Einzeldatei-Struktur bei (inline CSS und JS)
+- Erhalte alle bestehenden Funktionen, die nicht geändert werden sollen
+- Stelle sicher, dass das Spiel nach der Änderung vollständig funktionsfähig ist
+- Verbessere die Codequalität wo möglich
+
+AUSGABEFORMAT:
+Deine Antwort muss NUR der reine HTML-Code sein.
+Beginne direkt mit <!DOCTYPE html> - KEIN Markdown, KEINE Erklärungen.`,
+
       useCustomPrompts: false
     };
   }
@@ -38,6 +75,7 @@ Your response must be ONLY the new HTML code, without any explanations or markdo
         }
       }
     } catch (error) {
+      console.warn('Failed to load settings from localStorage:', error);
     }
     return this.getDefaultSettings();
   }
@@ -46,40 +84,23 @@ Your response must be ONLY the new HTML code, without any explanations or markdo
     try {
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings));
     } catch (error) {
+      console.warn('Failed to save settings to localStorage:', error);
     }
   }
 
   static validatePrompt(prompt: string): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
-    
+
     // Minimum character count
     if (prompt.length < 50) {
-      errors.push('Prompt must be at least 50 characters long');
+      errors.push('Prompt muss mindestens 50 Zeichen lang sein');
     }
-    
-    // Required keywords for educational content
-    const requiredKeywords = ['HTML', 'game'];
-    const missingKeywords = requiredKeywords.filter(keyword => 
-      !prompt.toLowerCase().includes(keyword.toLowerCase())
-    );
-    
-    if (missingKeywords.length > 0) {
-      errors.push(`Prompt must include: ${missingKeywords.join(', ')}`);
+
+    // Maximum length to prevent token overflow
+    if (prompt.length > 10000) {
+      errors.push('Prompt darf maximal 10.000 Zeichen lang sein');
     }
-    
-    // Check for potentially malicious content patterns
-    const maliciousPatterns = [
-      /eval\s*\(/i,
-      /document\.write/i,
-      /innerHTML\s*=/i,
-      /outerHTML\s*=/i
-    ];
-    
-    const hasMaliciousContent = maliciousPatterns.some(pattern => pattern.test(prompt));
-    if (hasMaliciousContent) {
-      errors.push('Prompt contains potentially unsafe content');
-    }
-    
+
     return {
       isValid: errors.length === 0,
       errors

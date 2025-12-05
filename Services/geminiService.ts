@@ -9,19 +9,91 @@ if (!API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-const baseSystemInstruction = `Du bist ein erfahrener Webentwickler, der sich auf die Erstellung einfacher, unterhaltsamer und lehrreicher Browser-Minispiele für Kinder spezialisiert hat.
-Deine Aufgabe ist es, den vollständigen Code für ein Minispiel basierend auf der Anfrage des Benutzers zu generieren.
-Das gesamte Spiel muss in einer einzigen HTML-Datei enthalten sein.
-Das bedeutet, dass alle CSS in einem <style>-Tag im <head> stehen müssen und alle JavaScript in einem <script>-Tag am Ende des <body>.
-Das Spiel sollte optisch ansprechend sein und helle Farben sowie klare Schriftarten verwenden.
-Es muss vollständig funktionsfähig und eigenständig sein.
-Verwende keine externen Bibliotheken oder Assets.
+const GAME_GENERATION_PROMPT = `Du bist ein erfahrener Webentwickler und Spieledesigner, der interaktive Lernspiele für Kinder erstellt.
 
-WICHTIG: Deine Antwort muss NUR der reine HTML-Code sein.
-Wickle deine Antwort NICHT in Markdown-Code-Blöcke ein.
-Beginne NICHT mit \`\`\`html
-Verwende KEINE Markdown-Formatierung.
-Beginne deine Antwort direkt mit <!DOCTYPE html> und nichts anderem davor.`;
+DEINE AUFGABE:
+Erstelle ein vollständiges, funktionierendes HTML-Minispiel basierend auf der Benutzeranfrage.
+
+TECHNISCHE ANFORDERUNGEN:
+• Eine einzige HTML-Datei (kein externes CSS/JS)
+• CSS im <style>-Tag im <head>
+• JavaScript im <script>-Tag am Ende des <body>
+• Keine externen Bibliotheken, CDNs oder Bilder
+• Funktioniert auf Desktop und Tablet (responsive)
+• Nutze CSS Grid oder Flexbox für Layouts
+
+DESIGN-STANDARDS:
+• Modernes, farbenfrohes Design mit CSS-Gradienten
+• Große, kindgerechte Schriftarten (min. 18px)
+• Buttons mindestens 48x48px für einfache Touch-Bedienung
+• Sanfte CSS-Animationen und Übergänge
+• Visuelles Feedback: Hover-Effekte, Klick-Animationen
+• Erfolgs-Animationen (Konfetti-Effekt, Sterne, etc.)
+
+PFLICHT-SPIELELEMENTE:
+1. STARTBILDSCHIRM
+   - Attraktiver Titel mit Animation
+   - Kurze Spielanleitung (1-2 Sätze)
+   - Großer "Spiel starten" Button
+
+2. SPIELMECHANIK
+   - Klarer Punktestand/Fortschritt sichtbar
+   - Timer oder Rundenanzeige (falls passend)
+   - Sofortiges Feedback bei jeder Aktion
+   - Soundeffekte simulieren (visuelle Cues)
+
+3. FEEDBACK-SYSTEM
+   - RICHTIG: Grün, Häkchen, ermutigendes Emoji, +Punkte
+   - FALSCH: Sanftes Rot, "Versuch's nochmal!", keine Bestrafung
+   - Fortschrittsbalken oder Level-Anzeige
+
+4. ENDBILDSCHIRM
+   - Gesamtpunktzahl mit Sterne-Bewertung (1-3 Sterne)
+   - Motivierende Nachricht basierend auf Score
+   - "Nochmal spielen" Button
+   - Optional: "Schwierigkeit erhöhen" Button
+
+PÄDAGOGISCHE PRINZIPIEN:
+• Positive Verstärkung statt Bestrafung
+• Klare, altersgerechte Sprache
+• Ermutigung bei Fehlern: "Fast richtig! Probier nochmal!"
+• Schwierigkeitsgrad anpassbar oder adaptiv
+• Kleine Erfolge feiern
+
+CODE-QUALITÄT:
+• Sauberer, gut strukturierter Code
+• Aussagekräftige Variablennamen auf Deutsch oder Englisch
+• Event-Listener statt inline onclick
+• Zentrale Spielzustandsverwaltung
+
+KRITISCH - AUSGABEFORMAT:
+Deine Antwort muss AUSSCHLIESSLICH der reine HTML-Code sein.
+Beginne DIREKT mit <!DOCTYPE html>
+KEIN Markdown, KEINE Erklärungen, KEINE Codeblöcke mit \`\`\``;
+
+const REFINEMENT_PROMPT = `Du bist ein Webentwickler, der ein bestehendes HTML-Minispiel verbessert.
+
+DEINE AUFGABE:
+Implementiere die gewünschten Änderungen präzise und gib den vollständigen HTML-Code zurück.
+
+WICHTIGE REGELN:
+• Behalte ALLE bestehenden Funktionen bei, die nicht explizit geändert werden sollen
+• Verbessere die Codequalität wo möglich
+• Stelle sicher, dass das Spiel nach der Änderung vollständig funktioniert
+• Teste gedanklich alle Spielzustände durch
+
+BEI DESIGN-ÄNDERUNGEN:
+• Achte auf Konsistenz mit dem bestehenden Stil
+• Nutze CSS-Variablen für Farben wenn möglich
+
+BEI FUNKTIONS-ÄNDERUNGEN:
+• Erhalte den Spielfluss (Start → Spiel → Ende)
+• Aktualisiere Punktelogik falls nötig
+
+KRITISCH - AUSGABEFORMAT:
+Deine Antwort muss AUSSCHLIESSLICH der reine HTML-Code sein.
+Beginne DIREKT mit <!DOCTYPE html>
+KEIN Markdown, KEINE Erklärungen, KEINE Codeblöcke.`;
 
 export interface FilePart {
     mimeType: string;
@@ -30,9 +102,9 @@ export interface FilePart {
 
 export async function generateMinigameCode(prompt: string, customSettings?: Settings, files?: FilePart[]): Promise<string> {
     try {
-        let systemInstruction = baseSystemInstruction;
+        // Use custom prompt if enabled and valid, otherwise use enhanced default
+        let systemInstruction = GAME_GENERATION_PROMPT;
 
-        // Use custom prompt if enabled and valid
         if (customSettings?.useCustomPrompts && customSettings.mainPrompt) {
             const validation = SettingsService.validatePrompt(customSettings.mainPrompt);
             if (validation.isValid) {
@@ -40,13 +112,21 @@ export async function generateMinigameCode(prompt: string, customSettings?: Sett
             }
         }
 
-        const parts: any[] = [{ text: `${systemInstruction}\n\nUser request: ${prompt}` }];
+        const fullPrompt = `${systemInstruction}
+
+---
+BENUTZERANFRAGE:
+${prompt}
+---
+
+Erstelle jetzt das Spiel. Beginne direkt mit <!DOCTYPE html>`;
+
+        const parts: any[] = [{ text: fullPrompt }];
 
         if (files && files.length > 0) {
             files.forEach(file => {
                 let mediaResolution = "media_resolution_low";
 
-                // Assign resolution based on file type
                 if (file.mimeType.startsWith("image/")) {
                     mediaResolution = "media_resolution_high";
                 } else if (
@@ -58,10 +138,8 @@ export async function generateMinigameCode(prompt: string, customSettings?: Sett
                     file.mimeType.includes("presentation") ||
                     file.mimeType.includes("document")
                 ) {
-                    // Documents, PDFs, and office files get medium resolution for better text extraction
                     mediaResolution = "media_resolution_medium";
                 }
-                // Video, audio, and other files default to low resolution
 
                 parts.push({
                     inlineData: {
@@ -76,15 +154,16 @@ export async function generateMinigameCode(prompt: string, customSettings?: Sett
         }
 
         const response = await ai.models.generateContent({
-            model: "gemini-3-pro-preview",
-            contents: [
-                {
-                    parts: parts
-                }
-            ]
+            model: "gemini-2.5-flash",
+            contents: [{ parts: parts }]
         });
 
-        return response.text;
+        let html = response.text;
+
+        // Clean up any markdown formatting that might have slipped through
+        html = cleanHtmlResponse(html);
+
+        return html;
     } catch (error) {
         console.error("Gemini API error:", error);
         throw new Error("Fehler beim Erzeugen des Minispiels. Bitte versuche es erneut.");
@@ -92,44 +171,41 @@ export async function generateMinigameCode(prompt: string, customSettings?: Sett
 }
 
 export async function refineMinigameCode(prompt: string, existingHtml: string, customSettings?: Settings): Promise<string> {
-    let refinementInstruction = `Du bist ein Webentwickler, der beauftragt ist, ein bestehendes HTML-Minispiel zu modifizieren.
-Der Benutzer wird dir den aktuellen HTML-Code und eine Beschreibung der gewünschten Änderungen liefern.
-Deine Aufgabe ist es, den **vollständigen, aktualisierten HTML-Code** mit den implementierten Änderungen zurückzugeben.
-Behalte die Einzeldatei-Struktur bei (inline CSS und JS).
-Stelle sicher, dass das Spiel vollständig funktionsfähig bleibt.
-
-WICHTIG: Deine Antwort muss NUR der reine HTML-Code sein.
-Wickle deine Antwort NICHT in Markdown-Code-Blöcke ein.
-Beginne NICHT mit \`\`\`html
-Verwende KEINE Markdown-Formatierung.
-Beginne deine Antwort direkt mit <!DOCTYPE html> und nichts anderem davor.
-
-Hier ist der bestehende Code:
-\`\`\`html
-${existingHtml}
-\`\`\`
-`;
-
-    // Use custom refinement prompt if enabled and valid
-    if (customSettings?.useCustomPrompts && customSettings.refinementPrompt) {
-        const validation = SettingsService.validatePrompt(customSettings.refinementPrompt);
-        if (validation.isValid) {
-            refinementInstruction = `${customSettings.refinementPrompt}
-
-Here is the existing code:
-\`\`\`html  
-${existingHtml}
-\`\`\``;
-        }
-    }
-
     try {
+        let refinementInstruction = REFINEMENT_PROMPT;
+
+        if (customSettings?.useCustomPrompts && customSettings.refinementPrompt) {
+            const validation = SettingsService.validatePrompt(customSettings.refinementPrompt);
+            if (validation.isValid) {
+                refinementInstruction = customSettings.refinementPrompt;
+            }
+        }
+
+        // Send existing HTML as plain text, not in markdown blocks
+        const fullPrompt = `${refinementInstruction}
+
+---
+AKTUELLER SPIELCODE:
+${existingHtml}
+---
+
+GEWÜNSCHTE ÄNDERUNG:
+${prompt}
+---
+
+Gib jetzt den vollständigen aktualisierten HTML-Code zurück. Beginne direkt mit <!DOCTYPE html>`;
+
         const response = await ai.models.generateContent({
-            model: "gemini-3-pro-preview",
-            contents: `${refinementInstruction}\\n\\nUser request: ${prompt}`,
+            model: "gemini-2.5-flash",
+            contents: fullPrompt,
         });
 
-        return response.text;
+        let html = response.text;
+
+        // Clean up any markdown formatting
+        html = cleanHtmlResponse(html);
+
+        return html;
     } catch (error) {
         console.error("Gemini API error:", error);
         throw new Error("Fehler beim Verfeinern des Minispiels. Bitte versuche es erneut.");
@@ -138,48 +214,79 @@ ${existingHtml}
 
 export async function generateGameDescription(prompt: string): Promise<string> {
     try {
-        const descriptionPrompt = `Du bist ein kreativer Autor für Bildungsinhalte. Schreibe basierend auf folgendem Spielkonzept eine prägnante, ansprechende Beschreibung (maximal 2-3 Sätze), die erklärt, was das Spiel macht und welche pädagogischen Konzepte es vermittelt.
+        const descriptionPrompt = `Schreibe eine kurze, ansprechende Beschreibung (maximal 15 Wörter) für dieses Lernspiel:
 
-Spielkonzept: ${prompt}
+"${prompt}"
 
-Schreibe nur die Beschreibung, sonst nichts. Mache sie lehrreich, spannend und geeignet für Schüler. Maximal 20 Wörter.`;
+Regeln:
+- Erkläre kurz was Spieler tun und lernen
+- Nutze aktive, einladende Sprache
+- Für Schüler geeignet
+- NUR die Beschreibung, nichts anderes`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-3-pro-preview",
+            model: "gemini-2.5-flash",
             contents: descriptionPrompt,
         });
 
-        // Extract only text parts to avoid thought signature warnings
         const textParts = response.candidates?.[0]?.content?.parts?.filter(part => 'text' in part) || [];
         const text = textParts.map(part => part.text).join('').trim();
         return text || response.text.trim();
     } catch (error) {
         console.error("Gemini API error generating description:", error);
-        // Return a fallback description if AI generation fails
         return "Ein KI-generiertes Lernspiel, das Lernen unterhaltsam und interaktiv macht.";
     }
 }
 
 export async function generateGameTitle(prompt: string): Promise<string> {
     try {
-        const titlePrompt = `Du bist ein kreativer Autor. Erstelle basierend auf folgendem Spielkonzept einen kurzen, einprägsamen Titel (maximal 5 Wörter), der die Essenz des Spiels erfasst.
+        const titlePrompt = `Erstelle einen kurzen, einprägsamen Spieltitel (2-4 Wörter) für:
 
-Spielkonzept: ${prompt}
+"${prompt}"
 
-Schreibe nur den Titel, sonst nichts. Mache ihn spannend, klar und geeignet für Schüler. Verwende keine Anführungszeichen oder besondere Formatierung.`;
+Regeln:
+- Kreativ und kindgerecht
+- Kein Doppelpunkt, keine Anführungszeichen
+- NUR der Titel, nichts anderes`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-3-pro-preview",
+            model: "gemini-2.5-flash",
             contents: titlePrompt,
         });
 
-        // Extract only text parts to avoid thought signature warnings
         const textParts = response.candidates?.[0]?.content?.parts?.filter(part => 'text' in part) || [];
-        const text = textParts.map(part => part.text).join('').trim();
+        let text = textParts.map(part => part.text).join('').trim();
+
+        // Clean up common issues
+        text = text.replace(/^["']|["']$/g, ''); // Remove quotes
+        text = text.replace(/\*\*/g, ''); // Remove bold markers
+
         return text || response.text.trim();
     } catch (error) {
         console.error("Gemini API error generating title:", error);
-        // Return a fallback title if AI generation fails
         return prompt.length > 25 ? `${prompt.substring(0, 22)}...` : prompt;
     }
+}
+
+/**
+ * Cleans up HTML response by removing any markdown formatting
+ */
+function cleanHtmlResponse(html: string): string {
+    // Remove markdown code blocks
+    html = html.replace(/^```html\s*/i, '');
+    html = html.replace(/^```\s*/i, '');
+    html = html.replace(/\s*```$/i, '');
+
+    // Trim whitespace
+    html = html.trim();
+
+    // Ensure it starts with DOCTYPE
+    if (!html.toLowerCase().startsWith('<!doctype')) {
+        const doctypeIndex = html.toLowerCase().indexOf('<!doctype');
+        if (doctypeIndex > 0) {
+            html = html.substring(doctypeIndex);
+        }
+    }
+
+    return html;
 }
