@@ -9,91 +9,27 @@ if (!API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-const GAME_GENERATION_PROMPT = `Du bist ein erfahrener Webentwickler und Spieledesigner, der interaktive Lernspiele für Kinder erstellt.
+const GAME_GENERATION_PROMPT = `Erstelle ein HTML-Lernspiel für Kinder.
 
-DEINE AUFGABE:
-Erstelle ein vollständiges, funktionierendes HTML-Minispiel basierend auf der Benutzeranfrage.
+TECHNISCH:
+- Eine HTML-Datei (CSS in <style>, JS in <script>)
+- Keine externen Ressourcen
+- Responsive, Touch-freundlich
 
-TECHNISCHE ANFORDERUNGEN:
-• Eine einzige HTML-Datei (kein externes CSS/JS)
-• CSS im <style>-Tag im <head>
-• JavaScript im <script>-Tag am Ende des <body>
-• Keine externen Bibliotheken, CDNs oder Bilder
-• Funktioniert auf Desktop und Tablet (responsive)
-• Nutze CSS Grid oder Flexbox für Layouts
+SPIEL:
+- Startbildschirm mit Anleitung
+- Punktestand und Feedback
+- Endbildschirm mit "Nochmal spielen"
 
-DESIGN-STANDARDS:
-• Modernes, farbenfrohes Design mit CSS-Gradienten
-• Große, kindgerechte Schriftarten (min. 18px)
-• Buttons mindestens 48x48px für einfache Touch-Bedienung
-• Sanfte CSS-Animationen und Übergänge
-• Visuelles Feedback: Hover-Effekte, Klick-Animationen
-• Erfolgs-Animationen (Konfetti-Effekt, Sterne, etc.)
+AUSGABE: Nur HTML-Code, beginne mit <!DOCTYPE html>`;
 
-PFLICHT-SPIELELEMENTE:
-1. STARTBILDSCHIRM
-   - Attraktiver Titel mit Animation
-   - Kurze Spielanleitung (1-2 Sätze)
-   - Großer "Spiel starten" Button
+const REFINEMENT_PROMPT = `Verbessere das HTML-Spiel gemäß der Anfrage.
 
-2. SPIELMECHANIK
-   - Klarer Punktestand/Fortschritt sichtbar
-   - Timer oder Rundenanzeige (falls passend)
-   - Sofortiges Feedback bei jeder Aktion
-   - Soundeffekte simulieren (visuelle Cues)
+REGELN:
+- Erhalte bestehende Funktionen
+- Einzeldatei-Struktur beibehalten
 
-3. FEEDBACK-SYSTEM
-   - RICHTIG: Grün, Häkchen, ermutigendes Emoji, +Punkte
-   - FALSCH: Sanftes Rot, "Versuch's nochmal!", keine Bestrafung
-   - Fortschrittsbalken oder Level-Anzeige
-
-4. ENDBILDSCHIRM
-   - Gesamtpunktzahl mit Sterne-Bewertung (1-3 Sterne)
-   - Motivierende Nachricht basierend auf Score
-   - "Nochmal spielen" Button
-   - Optional: "Schwierigkeit erhöhen" Button
-
-PÄDAGOGISCHE PRINZIPIEN:
-• Positive Verstärkung statt Bestrafung
-• Klare, altersgerechte Sprache
-• Ermutigung bei Fehlern: "Fast richtig! Probier nochmal!"
-• Schwierigkeitsgrad anpassbar oder adaptiv
-• Kleine Erfolge feiern
-
-CODE-QUALITÄT:
-• Sauberer, gut strukturierter Code
-• Aussagekräftige Variablennamen auf Deutsch oder Englisch
-• Event-Listener statt inline onclick
-• Zentrale Spielzustandsverwaltung
-
-KRITISCH - AUSGABEFORMAT:
-Deine Antwort muss AUSSCHLIESSLICH der reine HTML-Code sein.
-Beginne DIREKT mit <!DOCTYPE html>
-KEIN Markdown, KEINE Erklärungen, KEINE Codeblöcke mit \`\`\``;
-
-const REFINEMENT_PROMPT = `Du bist ein Webentwickler, der ein bestehendes HTML-Minispiel verbessert.
-
-DEINE AUFGABE:
-Implementiere die gewünschten Änderungen präzise und gib den vollständigen HTML-Code zurück.
-
-WICHTIGE REGELN:
-• Behalte ALLE bestehenden Funktionen bei, die nicht explizit geändert werden sollen
-• Verbessere die Codequalität wo möglich
-• Stelle sicher, dass das Spiel nach der Änderung vollständig funktioniert
-• Teste gedanklich alle Spielzustände durch
-
-BEI DESIGN-ÄNDERUNGEN:
-• Achte auf Konsistenz mit dem bestehenden Stil
-• Nutze CSS-Variablen für Farben wenn möglich
-
-BEI FUNKTIONS-ÄNDERUNGEN:
-• Erhalte den Spielfluss (Start → Spiel → Ende)
-• Aktualisiere Punktelogik falls nötig
-
-KRITISCH - AUSGABEFORMAT:
-Deine Antwort muss AUSSCHLIESSLICH der reine HTML-Code sein.
-Beginne DIREKT mit <!DOCTYPE html>
-KEIN Markdown, KEINE Erklärungen, KEINE Codeblöcke.`;
+AUSGABE: Nur HTML-Code, beginne mit <!DOCTYPE html>`;
 
 export interface FilePart {
     mimeType: string;

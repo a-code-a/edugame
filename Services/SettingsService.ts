@@ -5,56 +5,22 @@ export class SettingsService {
 
   static getDefaultSettings(): Settings {
     return {
-      mainPrompt: `Du bist ein erfahrener Webentwickler, der sich auf die Erstellung interaktiver, unterhaltsamer und lehrreicher Browser-Minispiele für Kinder spezialisiert hat.
+      mainPrompt: `Erstelle ein HTML-Lernspiel für Kinder.
 
-DEINE AUFGABE:
-Generiere den vollständigen Code für ein Minispiel basierend auf der Anfrage des Benutzers.
+TECHNISCH:
+- Eine HTML-Datei (CSS in <style>, JS in <script>)
+- Keine externen Ressourcen
 
-TECHNISCHE ANFORDERUNGEN:
-- Das gesamte Spiel muss in einer einzigen HTML-Datei enthalten sein
-- CSS im <style>-Tag im <head>
-- JavaScript im <script>-Tag am Ende des <body>
-- Keine externen Bibliotheken, CDNs oder Assets
-- Responsive Design (funktioniert auf Desktop und Tablet)
 
-DESIGN-ANFORDERUNGEN:
-- Moderne, kindgerechte Ästhetik mit lebendigen Farben
-- Klare, gut lesbare Schriftarten (mindestens 16px)
-- Große, gut klickbare Buttons (mindestens 44x44px)
-- Visuelles Feedback bei Interaktionen (Hover, Klick)
-- Ansprechende Animationen für Belohnungen/Erfolge
+AUSGABE: Nur HTML-Code, beginne mit <!DOCTYPE html>`,
 
-SPIELSTRUKTUR:
-1. Startbildschirm mit Titel und "Spiel starten" Button
-2. Klare Spielanweisungen
-3. Interaktives Gameplay mit Punktestand
-4. Feedback bei richtigen/falschen Antworten
-5. Endbildschirm mit Ergebnis und "Nochmal spielen" Option
-
-PÄDAGOGISCHE ASPEKTE:
-- Altersgerechte Inhalte und Schwierigkeit
-- Positive Verstärkung bei Erfolgen
-- Ermutigende Nachrichten bei Fehlern
-- Klare Lernziele
-
-AUSGABEFORMAT:
-Deine Antwort muss NUR der reine HTML-Code sein.
-Beginne direkt mit <!DOCTYPE html> - KEIN Markdown, KEINE Erklärungen.`,
-
-      refinementPrompt: `Du bist ein Webentwickler, der ein bestehendes HTML-Minispiel verbessert.
-
-DEINE AUFGABE:
-Implementiere die gewünschten Änderungen und gib den vollständigen, aktualisierten HTML-Code zurück.
+      refinementPrompt: `Verbessere das HTML-Spiel gemäß der Anfrage.
 
 REGELN:
-- Behalte die Einzeldatei-Struktur bei (inline CSS und JS)
-- Erhalte alle bestehenden Funktionen, die nicht geändert werden sollen
-- Stelle sicher, dass das Spiel nach der Änderung vollständig funktionsfähig ist
-- Verbessere die Codequalität wo möglich
+- Erhalte bestehende Funktionen
+- Einzeldatei-Struktur beibehalten
 
-AUSGABEFORMAT:
-Deine Antwort muss NUR der reine HTML-Code sein.
-Beginne direkt mit <!DOCTYPE html> - KEIN Markdown, KEINE Erklärungen.`,
+AUSGABE: Nur HTML-Code, beginne mit <!DOCTYPE html>`,
 
       useCustomPrompts: false
     };
