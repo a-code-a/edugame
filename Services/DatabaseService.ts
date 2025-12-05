@@ -61,6 +61,10 @@ class DatabaseService {
   }
 
   public async getSavedGames(): Promise<Minigame[]> {
+    // Don't fetch if no user is logged in
+    if (!this.userId) {
+      return [];
+    }
     try {
       const response = await fetch(`${API_BASE_URL}/games?userId=${this.userId}`, {
         method: 'GET',
