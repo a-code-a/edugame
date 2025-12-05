@@ -99,6 +99,10 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
 
   const [localGame, setLocalGame] = React.useState(game);
 
+  // Check if current user has liked/disliked
+  const userHasLiked = user && localGame.likedBy?.includes(user.uid);
+  const userHasDisliked = user && localGame.dislikedBy?.includes(user.uid);
+
   // Update local state when prop changes
   React.useEffect(() => {
     setLocalGame(game);
@@ -127,10 +131,22 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isSavedToDB) return;
+    if (!isSavedToDB || !user) return;
 
     // Optimistic update
-    setLocalGame(prev => ({ ...prev, likes: (prev.likes || 0) + 1 }));
+    const wasLiked = localGame.likedBy?.includes(user.uid);
+    setLocalGame(prev => ({
+      ...prev,
+      likes: (prev.likes || 0) + (wasLiked ? -1 : 1),
+      likedBy: wasLiked
+        ? prev.likedBy?.filter(id => id !== user.uid)
+        : [...(prev.likedBy || []), user.uid],
+      // Remove dislike if adding like
+      ...(prev.dislikedBy?.includes(user.uid) && !wasLiked ? {
+        dislikes: (prev.dislikes || 0) - 1,
+        dislikedBy: prev.dislikedBy?.filter(id => id !== user.uid)
+      } : {})
+    }));
 
     try {
       const { success, game: updatedGame } = await DatabaseService.getInstance().toggleLike(game.id);
@@ -139,17 +155,28 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
       }
     } catch (error) {
       console.error('Failed to like game', error);
-      // Revert on failure
-      setLocalGame(prev => ({ ...prev, likes: (prev.likes || 0) - 1 }));
+      setLocalGame(game); // Revert on failure
     }
   };
 
   const handleDislike = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isSavedToDB) return;
+    if (!isSavedToDB || !user) return;
 
     // Optimistic update
-    setLocalGame(prev => ({ ...prev, dislikes: (prev.dislikes || 0) + 1 }));
+    const wasDisliked = localGame.dislikedBy?.includes(user.uid);
+    setLocalGame(prev => ({
+      ...prev,
+      dislikes: (prev.dislikes || 0) + (wasDisliked ? -1 : 1),
+      dislikedBy: wasDisliked
+        ? prev.dislikedBy?.filter(id => id !== user.uid)
+        : [...(prev.dislikedBy || []), user.uid],
+      // Remove like if adding dislike
+      ...(prev.likedBy?.includes(user.uid) && !wasDisliked ? {
+        likes: (prev.likes || 0) - 1,
+        likedBy: prev.likedBy?.filter(id => id !== user.uid)
+      } : {})
+    }));
 
     try {
       const { success, game: updatedGame } = await DatabaseService.getInstance().toggleDislike(game.id);
@@ -158,8 +185,7 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
       }
     } catch (error) {
       console.error('Failed to dislike game', error);
-      // Revert on failure
-      setLocalGame(prev => ({ ...prev, dislikes: (prev.dislikes || 0) - 1 }));
+      setLocalGame(game); // Revert on failure
     }
   };
 
@@ -263,23 +289,25 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
               </span>
               <button
                 onClick={handleLike}
-                className="flex items-center gap-1 hover:text-indigo-600 transition-colors"
-                title="Gefällt mir"
+                disabled={!user}
+                className={`flex items-center gap-1 transition-colors ${userHasLiked ? 'text-indigo-600' : 'hover:text-indigo-600'} ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={user ? (userHasLiked ? 'Like entfernen' : 'Gefällt mir') : 'Anmelden zum Liken'}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3 w-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`h-3.5 w-3.5 ${userHasLiked ? 'text-indigo-600' : ''}`}>
                   <path d="M1 8.25a1.25 1.25 0 112.5 0v7.5a1.25 1.25 0 11-2.5 0v-7.5zM11 3V1.7c0-.268.14-.526.395-.607A2 2 0 0114 3c0 .995-.182 1.948-.514 2.826-.204.54.166 1.174.744 1.174h2.52c1.243 0 2.261 1.01 2.146 2.247a23.864 23.864 0 01-1.341 5.974C17.153 16.323 16.072 17 14.9 17h-3.192a3 3 0 01-1.341-.317l-2.734-1.366A3 3 0 006.292 15H5V8h.963c.685 0 1.258-.483 1.612-1.068a4.011 4.011 0 012.166-1.738L9.78 5.19a2 2 0 011.22 0l.5.11z" />
                 </svg>
-                {localGame.likes || 0}
+                <span className={userHasLiked ? 'font-semibold' : ''}>{localGame.likes || 0}</span>
               </button>
               <button
                 onClick={handleDislike}
-                className="flex items-center gap-1 hover:text-red-600 transition-colors"
-                title="Gefällt mir nicht"
+                disabled={!user}
+                className={`flex items-center gap-1 transition-colors ${userHasDisliked ? 'text-red-600' : 'hover:text-red-600'} ${!user ? 'opacity-50 cursor-not-allowed' : ''}`}
+                title={user ? (userHasDisliked ? 'Dislike entfernen' : 'Gefällt mir nicht') : 'Anmelden zum Disliken'}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3 w-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={`h-3.5 w-3.5 ${userHasDisliked ? 'text-red-600' : ''}`}>
                   <path d="M18.905 12.75a1.25 1.25 0 01-2.5 0v-7.5a1.25 1.25 0 112.5 0v7.5zM8.905 17v1.3c0 .268-.14.526-.395.607A2 2 0 015.905 17c0-.995.182-1.948.514-2.826.204-.54-.166-1.174-.744-1.174h-2.52c-1.243 0-2.261-1.01-2.146-2.247.193-2.125.663-4.175 1.341-5.974C2.752 3.677 3.833 3 5.005 3h3.192a3 3 0 011.341.317l2.734 1.366A3 3 0 0013.613 5h1.292v7h-.963c-.685 0-1.258.483-1.612 1.068a4.011 4.011 0 01-2.166 1.738l-.257.09a2 2 0 01-1.22 0l-.5-.11z" />
                 </svg>
-                {localGame.dislikes || 0}
+                <span className={userHasDisliked ? 'font-semibold' : ''}>{localGame.dislikes || 0}</span>
               </button>
             </div>
           )}

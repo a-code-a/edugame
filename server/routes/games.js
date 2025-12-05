@@ -264,48 +264,120 @@ router.post('/:id/play', async (req, res) => {
   }
 });
 
-// POST /api/games/:id/like - Increment likes
+// POST /api/games/:id/like - Toggle like for a user
 router.post('/:id/like', async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(`Incrementing likes for game: ${id}`);
+    const userId = req.headers.userid || req.query.userId;
 
-    const game = await Game.findOneAndUpdate(
-      { id },
-      { $inc: { likes: 1 } },
-      { new: true }
-    );
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const game = await Game.findOne({ id });
 
     if (!game) {
       return res.status(404).json({ error: 'Game not found' });
     }
 
-    res.json(game);
+    const hasLiked = game.likedBy.includes(userId);
+    const hasDisliked = game.dislikedBy.includes(userId);
+
+    let update = {};
+
+    if (hasLiked) {
+      // User already liked, remove like
+      update = {
+        $pull: { likedBy: userId },
+        $inc: { likes: -1 }
+      };
+    } else {
+      // User hasn't liked, add like
+      update = {
+        $addToSet: { likedBy: userId },
+        $inc: { likes: 1 }
+      };
+
+      // If user had disliked, also remove dislike
+      if (hasDisliked) {
+        update.$pull = { ...update.$pull, dislikedBy: userId };
+        update.$inc = { ...update.$inc, dislikes: -1 };
+      }
+    }
+
+    const updatedGame = await Game.findOneAndUpdate(
+      { id },
+      update,
+      { new: true }
+    );
+
+    // Return with user's like status
+    res.json({
+      ...updatedGame.toObject(),
+      userLiked: !hasLiked,
+      userDisliked: false
+    });
   } catch (error) {
-    console.error('Error incrementing likes:', error);
+    console.error('Error toggling like:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// POST /api/games/:id/dislike - Increment dislikes
+// POST /api/games/:id/dislike - Toggle dislike for a user
 router.post('/:id/dislike', async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(`Incrementing dislikes for game: ${id}`);
+    const userId = req.headers.userid || req.query.userId;
 
-    const game = await Game.findOneAndUpdate(
-      { id },
-      { $inc: { dislikes: 1 } },
-      { new: true }
-    );
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const game = await Game.findOne({ id });
 
     if (!game) {
       return res.status(404).json({ error: 'Game not found' });
     }
 
-    res.json(game);
+    const hasLiked = game.likedBy.includes(userId);
+    const hasDisliked = game.dislikedBy.includes(userId);
+
+    let update = {};
+
+    if (hasDisliked) {
+      // User already disliked, remove dislike
+      update = {
+        $pull: { dislikedBy: userId },
+        $inc: { dislikes: -1 }
+      };
+    } else {
+      // User hasn't disliked, add dislike
+      update = {
+        $addToSet: { dislikedBy: userId },
+        $inc: { dislikes: 1 }
+      };
+
+      // If user had liked, also remove like
+      if (hasLiked) {
+        update.$pull = { ...update.$pull, likedBy: userId };
+        update.$inc = { ...update.$inc, likes: -1 };
+      }
+    }
+
+    const updatedGame = await Game.findOneAndUpdate(
+      { id },
+      update,
+      { new: true }
+    );
+
+    // Return with user's like status
+    res.json({
+      ...updatedGame.toObject(),
+      userLiked: false,
+      userDisliked: !hasDisliked
+    });
   } catch (error) {
-    console.error('Error incrementing dislikes:', error);
+    console.error('Error toggling dislike:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

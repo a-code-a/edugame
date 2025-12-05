@@ -13,6 +13,8 @@ export interface Minigame {
   playCount?: number;
   likes?: number;
   dislikes?: number;
+  likedBy?: string[];
+  dislikedBy?: string[];
   isPublic?: boolean;
   creatorName?: string;
 }

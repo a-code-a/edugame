@@ -52,6 +52,14 @@ const gameSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  likedBy: {
+    type: [String],
+    default: []
+  },
+  dislikedBy: {
+    type: [String],
+    default: []
+  },
   isPublic: {
     type: Boolean,
     default: false,
