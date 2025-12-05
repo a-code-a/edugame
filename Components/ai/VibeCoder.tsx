@@ -1,13 +1,22 @@
 import React, { useState, useRef } from 'react';
-import { generateMinigameCode, generateGameDescription, generateGameTitle, FilePart } from '../../Services/geminiService';
+import { generateMinigameCode, generateGameDescription, generateGameTitle, generateGameIdeas, GameIdea, FilePart } from '../../Services/geminiService';
 import DatabaseService from '../../Services/DatabaseService';
 import { Minigame } from '../../types';
 import { useSettings } from '../../Context/SettingsContext';
+import { GRADES, SUBJECTS } from '../../constants';
 
 interface VibeCoderProps {
   onGameCreated: (game: Minigame) => void;
   onGameSaved?: (game: Minigame) => void;
 }
+
+const SUBJECT_LABELS: Record<string, string> = {
+  'Math': 'Mathematik',
+  'Language Arts': 'Sprache',
+  'Science': 'Naturwissenschaften',
+  'Social Studies': 'Gesellschaft',
+  'Art': 'Kunst',
+};
 
 const WandIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
@@ -24,6 +33,18 @@ const PaperclipIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 const XMarkIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+const SparklesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+  </svg>
+);
+
+const ChevronDownIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
   </svg>
 );
 
@@ -44,11 +65,18 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
   const { settings } = useSettings();
   const databaseService = DatabaseService.getInstance();
 
+  // Inspiration panel state
+  const [showInspiration, setShowInspiration] = useState(false);
+  const [inspirationSubject, setInspirationSubject] = useState(SUBJECTS[0]);
+  const [inspirationGrade, setInspirationGrade] = useState(5);
+  const [inspirationKeywords, setInspirationKeywords] = useState('');
+  const [ideas, setIdeas] = useState<GameIdea[]>([]);
+  const [isGeneratingIdeas, setIsGeneratingIdeas] = useState(false);
+
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
       await processFiles(Array.from(event.target.files));
     }
-    // Reset input so same file can be selected again if needed
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -58,22 +86,19 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
     const newAttachedFiles: AttachedFile[] = [];
 
     for (const file of files) {
-      // Gemini 3.0 supports: images, audio, video, PDFs, text, and various document formats
-      // Allow most common file types and let Gemini handle compatibility
       const unsupportedTypes = [
-        'application/x-msdownload', // .exe
+        'application/x-msdownload',
         'application/x-executable',
         'application/x-mach-binary',
-        'application/octet-stream' // generic binary, often executables
+        'application/octet-stream'
       ];
 
-      // Block potentially dangerous/unsupported file types
       if (unsupportedTypes.includes(file.type) || file.name.match(/\.(exe|dll|so|dylib|app)$/i)) {
         setError(`Dateityp ${file.type || 'unbekannt'} wird aus Sicherheitsgründen nicht unterstützt.`);
         continue;
       }
 
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      if (file.size > 10 * 1024 * 1024) {
         setError(`Datei ${file.name} ist zu groß. Maximale Größe ist 10MB.`);
         continue;
       }
@@ -100,7 +125,6 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
-          // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
           const base64 = reader.result.split(',')[1];
           resolve(base64);
         } else {
@@ -143,7 +167,6 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
     setIsLoading(true);
     setError(null);
     try {
-      // Generate game code, description, and title in parallel
       const [htmlContent, aiDescription, aiTitle] = await Promise.all([
         generateMinigameCode(prompt, settings, attachedFiles),
         generateGameDescription(prompt || "Spiel basierend auf hochgeladenen Dateien"),
@@ -196,6 +219,28 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
     }
   };
 
+  // Inspiration handlers
+  const handleGenerateIdeas = async () => {
+    setIsGeneratingIdeas(true);
+    setError(null);
+    setIdeas([]);
+
+    try {
+      const generatedIdeas = await generateGameIdeas(inspirationSubject, inspirationGrade, inspirationKeywords || undefined);
+      setIdeas(generatedIdeas);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Fehler beim Generieren der Ideen.');
+    } finally {
+      setIsGeneratingIdeas(false);
+    }
+  };
+
+  const handleUseIdea = (idea: GameIdea) => {
+    setPrompt(idea.prompt);
+    setShowInspiration(false);
+    setIdeas([]);
+  };
+
   return (
     <div
       className={`relative overflow-hidden rounded-[24px] bg-white/90 border transition-colors duration-200 shadow-xl shadow-slate-300/30 ${isDragging ? 'border-purple-500 bg-purple-50' : 'border-slate-200/60'}`}
@@ -216,9 +261,104 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
-              Idee formulieren
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Idee formulieren
+              </label>
+              <button
+                onClick={() => setShowInspiration(!showInspiration)}
+                className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${showInspiration
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'text-slate-500 hover:text-amber-600 hover:bg-amber-50'
+                  }`}
+              >
+                <SparklesIcon className="h-4 w-4" />
+                Inspiration
+                <ChevronDownIcon className={`h-3 w-3 transition-transform ${showInspiration ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+
+            {/* Inspiration Panel */}
+            {showInspiration && (
+              <div className="mb-4 p-4 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                  <select
+                    value={inspirationSubject}
+                    onChange={(e) => setInspirationSubject(e.target.value)}
+                    className="px-3 py-2 rounded-lg border border-amber-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  >
+                    {SUBJECTS.map((s) => (
+                      <option key={s} value={s}>{SUBJECT_LABELS[s] || s}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={inspirationGrade}
+                    onChange={(e) => setInspirationGrade(Number(e.target.value))}
+                    className="px-3 py-2 rounded-lg border border-amber-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  >
+                    {GRADES.map((g) => (
+                      <option key={g} value={g}>Klasse {g}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    value={inspirationKeywords}
+                    onChange={(e) => setInspirationKeywords(e.target.value)}
+                    placeholder="Stichwörter..."
+                    className="px-3 py-2 rounded-lg border border-amber-200 bg-white text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  />
+                </div>
+                <button
+                  onClick={handleGenerateIdeas}
+                  disabled={isGeneratingIdeas}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium text-sm shadow-md hover:shadow-lg transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isGeneratingIdeas ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Ideen generieren...
+                    </>
+                  ) : (
+                    <>
+                      <SparklesIcon className="h-4 w-4" />
+                      3 Spielideen generieren
+                    </>
+                  )}
+                </button>
+
+                {/* Generated Ideas */}
+                {ideas.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    {ideas.map((idea, index) => (
+                      <div
+                        key={index}
+                        onClick={() => handleUseIdea(idea)}
+                        className="p-3 rounded-lg bg-white border border-amber-200 hover:border-amber-400 hover:shadow-md cursor-pointer transition-all group"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-100 text-amber-700 text-xs font-bold flex items-center justify-center">
+                            {index + 1}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-slate-800 text-sm group-hover:text-amber-700 transition-colors">
+                              {idea.title}
+                            </h4>
+                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{idea.description}</p>
+                          </div>
+                          <span className="text-xs text-amber-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                            Übernehmen →
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="relative">
               <textarea
                 data-role="vibe-prompt"
@@ -246,7 +386,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                  title="Dateien hochladen (Bilder, Videos, Audio, Dokumente, Tabellen, Präsentationen und mehr)"
+                  title="Dateien hochladen"
                   disabled={isLoading}
                 >
                   <PaperclipIcon className="h-5 w-5" />

@@ -268,6 +268,70 @@ Regeln:
     }
 }
 
+export interface GameIdea {
+    title: string;
+    description: string;
+    prompt: string;
+}
+
+const SUBJECT_NAMES: Record<string, string> = {
+    'Math': 'Mathematik',
+    'Language Arts': 'Sprache/Deutsch',
+    'Science': 'Naturwissenschaften',
+    'Social Studies': 'Gesellschaftslehre/Geschichte',
+    'Art': 'Kunst',
+};
+
+export async function generateGameIdeas(subject: string, grade: number, keywords?: string): Promise<GameIdea[]> {
+    try {
+        const subjectName = SUBJECT_NAMES[subject] || subject;
+        const keywordPart = keywords ? `\nOptionale Themen/Stichwörter: ${keywords}` : '';
+
+        const ideaPrompt = `Du bist ein kreativer Spieleentwickler für Lernspiele.
+
+AUFGABE: Generiere 3 VÖLLIG UNTERSCHIEDLICHE und KREATIVE Spielideen für:
+- Fach: ${subjectName}
+- Klassenstufe: ${grade}${keywordPart}
+
+WICHTIG:
+- Sei maximal kreativ! Keine Einschränkungen auf bestimmte Spieltypen.
+- Jedes Spiel soll einzigartig und überraschend sein.
+- Mische verschiedene Spielmechaniken: Quiz, Simulation, Puzzle, Adventure, Strategie, Arcade, etc.
+- Denke an ungewöhnliche Kombinationen und innovative Konzepte.
+- Spiele sollen pädagogisch wertvoll UND unterhaltsam sein.
+
+AUSGABEFORMAT (JSON-Array, sonst nichts):
+[
+  {
+    "title": "Kurzer, einprägsamer Titel",
+    "description": "1-2 Sätze, was das Spiel besonders macht",
+    "prompt": "Detaillierter Prompt für die Spielerstellung (mind. 50 Wörter)"
+  }
+]
+
+Antworte NUR mit dem JSON-Array, kein Markdown, keine Erklärungen.`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: ideaPrompt,
+        });
+
+        let text = response.text.trim();
+
+        // Clean up potential markdown formatting
+        text = text.replace(/^```json\s*/i, '');
+        text = text.replace(/^```\s*/i, '');
+        text = text.replace(/\s*```$/i, '');
+        text = text.trim();
+
+        const ideas: GameIdea[] = JSON.parse(text);
+        return ideas;
+    } catch (error) {
+        console.error("Gemini API error generating game ideas:", error);
+        throw new Error("Fehler beim Generieren der Spielideen. Bitte versuche es erneut.");
+    }
+}
+
 /**
  * Cleans up HTML response by removing any markdown formatting
  */
@@ -290,3 +354,4 @@ function cleanHtmlResponse(html: string): string {
 
     return html;
 }
+

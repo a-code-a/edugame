@@ -10,7 +10,7 @@ import GameViewer from '@/Components/gameplay/GameViewer';
 import SettingsPanel from '@/Components/settings/SettingsPanel';
 import HomePage from '@/Components/pages/HomePage';
 import ProjectsPage from '@/Components/pages/ProjectsPage';
-import TemplatesPage from '@/Components/pages/TemplatesPage';
+
 import ExplorePage from '@/Components/pages/ExplorePage';
 import Login from '@/Components/auth/Login';
 import Signup from '@/Components/auth/Signup';
@@ -92,14 +92,7 @@ function AppContent() {
                   </ProtectedRoute>
                 }
               />
-              <Route
-                path="/templates"
-                element={
-                  <ProtectedRoute>
-                    <TemplatesPage />
-                  </ProtectedRoute>
-                }
-              />
+
               <Route
                 path="/explore"
                 element={
