@@ -29,6 +29,7 @@ const GameViewer: React.FC = () => {
     if (!activeGame) return null;
 
     const [isShowing, setIsShowing] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
     const [currentGame, setCurrentGame] = useState<Minigame>(activeGame);
     const [messages, setMessages] = useState<ChatMessage[]>([
         { sender: 'system', text: 'Dies ist ein neues Spiel! Sag mir, was du ändern oder hinzufügen möchtest.' }
@@ -129,115 +130,135 @@ const GameViewer: React.FC = () => {
 
     return (
         <div
-            className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ${isShowing ? 'opacity-100' : 'opacity-0'}`}
+            className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300 ${isFullscreen ? 'p-0' : 'p-4'} ${isShowing ? 'opacity-100' : 'opacity-0'}`}
             aria-modal="true"
             role="dialog"
         >
-            <div className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm" onClick={closeViewer}></div>
+            {!isFullscreen && <div className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm" onClick={closeViewer}></div>}
 
-            <div className={`relative w-full max-w-[95vw] h-[95vh] flex flex-col bg-white dark:bg-gray-800 rounded-2xl shadow-2xl transition-all duration-300 ${isShowing ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-                {/* Header */}
-                <div className="flex items-center gap-4 p-4 border-b border-slate-200 dark:border-slate-700 rounded-t-2xl flex-shrink-0">
-                    {/* Title and badges */}
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <h2 className="text-lg font-bold text-slate-900 dark:text-white truncate">{activeGame.title}</h2>
+            <div className={`relative flex flex-col bg-white dark:bg-gray-800 shadow-2xl transition-all duration-300 ${isFullscreen ? 'w-full h-full rounded-none' : 'w-full max-w-[95vw] h-[95vh] rounded-2xl'} ${isShowing ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+                {/* Header - hidden in fullscreen */}
+                {!isFullscreen && (
+                    <div className="flex items-center gap-4 p-4 border-b border-slate-200 dark:border-slate-700 rounded-t-2xl flex-shrink-0">
+                        {/* Title and badges */}
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 flex-wrap">
+                                <h2 className="text-lg font-bold text-slate-900 dark:text-white truncate">{activeGame.title}</h2>
 
-                            {/* Read-only badges */}
-                            <div className="flex items-center gap-2">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-700 text-xs font-medium">
-                                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10.75 10.818v2.614A3.13 3.13 0 0011.888 13c.482-.315.612-.648.612-.875 0-.227-.13-.56-.612-.875a3.13 3.13 0 00-1.138-.432zM8.33 8.62c.053.055.115.11.184.164.208.16.46.284.736.363V6.603a2.45 2.45 0 00-.35.13c-.14.065-.27.143-.386.233-.377.292-.514.627-.514.909 0 .184.058.39.202.592.037.051.08.102.128.152z" />
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-6a.75.75 0 01.75.75v.316a3.78 3.78 0 011.653.713c.426.33.744.74.925 1.2a.75.75 0 01-1.395.55 1.35 1.35 0 00-.447-.563 2.187 2.187 0 00-.736-.363V9.3c.698.093 1.383.32 1.959.696.787.514 1.29 1.27 1.29 2.13 0 .86-.504 1.616-1.29 2.13-.576.377-1.261.603-1.96.696v.299a.75.75 0 11-1.5 0v-.3c-.697-.092-1.382-.318-1.958-.695-.482-.315-.857-.717-1.078-1.188a.75.75 0 111.359-.636c.08.173.245.376.54.569.313.205.706.353 1.138.432v-2.748a3.782 3.782 0 01-1.653-.713C6.9 9.433 6.5 8.681 6.5 7.875c0-.805.4-1.558 1.097-2.096a3.78 3.78 0 011.653-.713V4.75A.75.75 0 0110 4z" clipRule="evenodd" />
-                                    </svg>
-                                    Klasse {currentGame.grade}
-                                </span>
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${subjectInfo.color}`}>
-                                    <span>{subjectInfo.icon}</span>
-                                    {subjectInfo.label}
-                                </span>
+                                {/* Read-only badges */}
+                                <div className="flex items-center gap-2">
+                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-700 text-xs font-medium">
+                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M10.75 10.818v2.614A3.13 3.13 0 0011.888 13c.482-.315.612-.648.612-.875 0-.227-.13-.56-.612-.875a3.13 3.13 0 00-1.138-.432zM8.33 8.62c.053.055.115.11.184.164.208.16.46.284.736.363V6.603a2.45 2.45 0 00-.35.13c-.14.065-.27.143-.386.233-.377.292-.514.627-.514.909 0 .184.058.39.202.592.037.051.08.102.128.152z" />
+                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-6a.75.75 0 01.75.75v.316a3.78 3.78 0 011.653.713c.426.33.744.74.925 1.2a.75.75 0 01-1.395.55 1.35 1.35 0 00-.447-.563 2.187 2.187 0 00-.736-.363V9.3c.698.093 1.383.32 1.959.696.787.514 1.29 1.27 1.29 2.13 0 .86-.504 1.616-1.29 2.13-.576.377-1.261.603-1.96.696v.299a.75.75 0 11-1.5 0v-.3c-.697-.092-1.382-.318-1.958-.695-.482-.315-.857-.717-1.078-1.188a.75.75 0 111.359-.636c.08.173.245.376.54.569.313.205.706.353 1.138.432v-2.748a3.782 3.782 0 01-1.653-.713C6.9 9.433 6.5 8.681 6.5 7.875c0-.805.4-1.558 1.097-2.096a3.78 3.78 0 011.653-.713V4.75A.75.75 0 0110 4z" clipRule="evenodd" />
+                                        </svg>
+                                        Klasse {currentGame.grade}
+                                    </span>
+                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${subjectInfo.color}`}>
+                                        <span>{subjectInfo.icon}</span>
+                                        {subjectInfo.label}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                        {/* Edit button for AI generated games */}
-                        {isAiGenerated && (
-                            <button
-                                onClick={() => setShowEditPanel(!showEditPanel)}
-                                className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${showEditPanel
+                        {/* Actions */}
+                        <div className="flex items-center gap-2">
+                            {/* Edit button for AI generated games */}
+                            {isAiGenerated && (
+                                <button
+                                    onClick={() => setShowEditPanel(!showEditPanel)}
+                                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${showEditPanel
                                         ? 'bg-indigo-100 text-indigo-700'
                                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                    }`}
-                                title="Details bearbeiten"
-                            >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                <span className="hidden sm:inline">Details</span>
-                            </button>
-                        )}
+                                        }`}
+                                    title="Details bearbeiten"
+                                >
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    <span className="hidden sm:inline">Details</span>
+                                </button>
+                            )}
 
-                        {/* Save button */}
-                        {canBeSaved && (
-                            <button
-                                onClick={handleSaveToDatabase}
-                                disabled={isSaving || saveStatus === 'success'}
-                                className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:scale-100 ${saveStatus === 'success'
+                            {/* Save button */}
+                            {canBeSaved && (
+                                <button
+                                    onClick={handleSaveToDatabase}
+                                    disabled={isSaving || saveStatus === 'success'}
+                                    className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-60 disabled:scale-100 ${saveStatus === 'success'
                                         ? 'bg-green-600 shadow-green-400/40'
                                         : 'bg-gradient-to-r from-green-500 to-emerald-500 shadow-green-400/40'
-                                    }`}
+                                        }`}
+                                >
+                                    {isSaving ? (
+                                        <>
+                                            <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                            </svg>
+                                            <span className="hidden sm:inline">Speichern...</span>
+                                        </>
+                                    ) : saveStatus === 'success' ? (
+                                        <>
+                                            <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                            </svg>
+                                            <span className="hidden sm:inline">Gespeichert!</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                                            </svg>
+                                            <span className="hidden sm:inline">{activeGame.isSavedToDB ? 'Aktualisieren' : 'Speichern'}</span>
+                                        </>
+                                    )}
+                                </button>
+                            )}
+
+                            {/* Saved indicator for non-AI games */}
+                            {activeGame.isSavedToDB && !canBeSaved && (
+                                <div className="inline-flex items-center gap-2 rounded-xl bg-green-50 text-green-600 px-3 py-2 text-xs font-semibold">
+                                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    <span className="hidden sm:inline">Gespeichert</span>
+                                </div>
+                            )}
+
+                            {/* Fullscreen button */}
+                            <button
+                                onClick={() => setIsFullscreen(!isFullscreen)}
+                                className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+                                aria-label={isFullscreen ? 'Vollbild beenden' : 'Vollbild'}
+                                title={isFullscreen ? 'Vollbild beenden' : 'Vollbild'}
                             >
-                                {isSaving ? (
-                                    <>
-                                        <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                                        </svg>
-                                        <span className="hidden sm:inline">Speichern...</span>
-                                    </>
-                                ) : saveStatus === 'success' ? (
-                                    <>
-                                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                        </svg>
-                                        <span className="hidden sm:inline">Gespeichert!</span>
-                                    </>
+                                {isFullscreen ? (
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+                                    </svg>
                                 ) : (
-                                    <>
-                                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-                                        </svg>
-                                        <span className="hidden sm:inline">{activeGame.isSavedToDB ? 'Aktualisieren' : 'Speichern'}</span>
-                                    </>
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                                    </svg>
                                 )}
                             </button>
-                        )}
 
-                        {/* Saved indicator for non-AI games */}
-                        {activeGame.isSavedToDB && !canBeSaved && (
-                            <div className="inline-flex items-center gap-2 rounded-xl bg-green-50 text-green-600 px-3 py-2 text-xs font-semibold">
-                                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                </svg>
-                                <span className="hidden sm:inline">Gespeichert</span>
-                            </div>
-                        )}
-
-                        {/* Close button */}
-                        <button
-                            onClick={closeViewer}
-                            className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
-                            aria-label="Schließen"
-                        >
-                            <CloseIcon className="w-5 h-5" />
-                        </button>
+                            {/* Close button */}
+                            <button
+                                onClick={closeViewer}
+                                className="p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+                                aria-label="Schließen"
+                            >
+                                <CloseIcon className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Edit Panel (collapsible) */}
-                {showEditPanel && isAiGenerated && (
+                {!isFullscreen && showEditPanel && isAiGenerated && (
                     <div className="flex-shrink-0 px-4 py-3 bg-slate-50 border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700">
                         <div className="flex flex-wrap items-center gap-4">
                             <div className="flex items-center gap-2">
@@ -276,15 +297,15 @@ const GameViewer: React.FC = () => {
                 )}
 
                 {/* Save error message */}
-                {saveError && (
+                {!isFullscreen && saveError && (
                     <div className="flex-shrink-0 px-4 py-2 bg-red-50 border-b border-red-100">
                         <p className="text-sm text-red-600">{saveError}</p>
                     </div>
                 )}
 
                 {/* Main content */}
-                <div className="flex-grow flex flex-row overflow-hidden rounded-b-2xl">
-                    <div className="flex-grow bg-white overflow-hidden">
+                <div className={`flex-grow flex flex-row overflow-hidden ${isFullscreen ? '' : 'rounded-b-2xl'}`}>
+                    <div className="flex-grow bg-white overflow-hidden relative">
                         <iframe
                             key={currentGame.htmlContent}
                             srcDoc={currentGame.htmlContent}
@@ -292,8 +313,20 @@ const GameViewer: React.FC = () => {
                             className="w-full h-full border-0"
                             sandbox="allow-scripts allow-forms"
                         />
+                        {/* Floating exit fullscreen button */}
+                        {isFullscreen && (
+                            <button
+                                onClick={() => setIsFullscreen(false)}
+                                className="absolute top-4 right-4 p-3 rounded-xl bg-black/50 text-white hover:bg-black/70 transition-colors backdrop-blur-sm"
+                                title="Vollbild beenden (ESC)"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+                                </svg>
+                            </button>
+                        )}
                     </div>
-                    {isAiGenerated && (
+                    {!isFullscreen && isAiGenerated && (
                         <GameChat
                             messages={messages}
                             onSendMessage={handleSendMessage}
