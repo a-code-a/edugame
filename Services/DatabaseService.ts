@@ -37,6 +37,7 @@ class DatabaseService {
         body: JSON.stringify({
           ...game,
           userId: this.userId,
+          creatorName: game.creatorName
         }),
       });
 
@@ -189,6 +190,49 @@ class DatabaseService {
         headers: {
           'userId': this.userId,
         },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const updatedGame = await response.json();
+      return { success: true, game: updatedGame };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
+  public async getPublicGames(page: number = 1, limit: number = 12): Promise<{ games: Minigame[], totalPages: number }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/games/explore?page=${page}&limit=${limit}`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const games = data.games.map((game: any) => ({ ...game, isSavedToDB: true }));
+      return { games, totalPages: data.totalPages };
+    } catch (error) {
+      return { games: [], totalPages: 0 };
+    }
+  }
+
+  public async togglePublicStatus(gameId: string, isPublic: boolean): Promise<SaveGameResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/games/${gameId}/share`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'userId': this.userId,
+        },
+        body: JSON.stringify({ isPublic }),
       });
 
       if (!response.ok) {

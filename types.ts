@@ -13,6 +13,8 @@ export interface Minigame {
   playCount?: number;
   likes?: number;
   dislikes?: number;
+  isPublic?: boolean;
+  creatorName?: string;
 }
 
 export interface Settings {

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Minigame } from '../../types';
 import DatabaseService from '../../Services/DatabaseService';
+import { useAuth } from '../../Context/AuthContext';
 
 interface MinigameCardProps {
   game: Minigame;
@@ -91,8 +92,10 @@ const SubjectBadge: React.FC<{ subject: string }> = ({ subject }) => {
 };
 
 const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) => {
+  const { user } = useAuth();
   const isAiGenerated = game.id.startsWith('gen-');
   const isSavedToDB = game.isSavedToDB;
+  const isOwner = user && game.userId === user.uid;
 
   const [localGame, setLocalGame] = React.useState(game);
 
@@ -160,6 +163,27 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
     }
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isSavedToDB || !isOwner) return;
+
+    const newStatus = !localGame.isPublic;
+
+    // Optimistic update
+    setLocalGame(prev => ({ ...prev, isPublic: newStatus }));
+
+    try {
+      const { success, game: updatedGame } = await DatabaseService.getInstance().togglePublicStatus(game.id, newStatus);
+      if (success && updatedGame) {
+        setLocalGame(updatedGame);
+      }
+    } catch (error) {
+      console.error('Failed to share game', error);
+      // Revert on failure
+      setLocalGame(prev => ({ ...prev, isPublic: !newStatus }));
+    }
+  };
+
   return (
     <article className="group relative overflow-hidden rounded-[20px] border border-slate-200/60 bg-white shadow-lg hover:shadow-xl transition-all duration-200">
       <div className="relative p-5 space-y-4">
@@ -176,7 +200,15 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
               <SubjectBadge subject={localGame.subject} />
             </div>
             <h3 className="text-base font-semibold text-slate-900 line-clamp-2 mb-1">{localGame.title}</h3>
-            <p className="text-sm text-slate-500 line-clamp-2">{localGame.description}</p>
+            <p className="text-sm text-slate-500 line-clamp-2 mb-2">{localGame.description}</p>
+            {localGame.creatorName && (
+              <div className="flex items-center gap-1 text-xs text-slate-400">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3 w-3">
+                  <path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z" />
+                </svg>
+                <span>{localGame.creatorName}</span>
+              </div>
+            )}
           </div>
           {isAiGenerated && onDelete && (
             <button
@@ -211,6 +243,16 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
                 Gespeichert
               </div>
             )}
+
+            {localGame.isPublic && (
+              <div className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 text-blue-600 px-2.5 py-1 text-xs font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                  <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                </svg>
+                Öffentlich
+              </div>
+            )}
           </div>
 
           {isSavedToDB && (
@@ -243,13 +285,30 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
           )}
         </div>
 
-        <button
-          onClick={handlePlay}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 py-2.5 text-sm font-semibold text-white shadow-md hover:shadow-lg transition-all duration-200"
-        >
-          <PlayIcon className="h-4 w-4" />
-          Spiel starten
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handlePlay}
+            className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 py-2.5 text-sm font-semibold text-white shadow-md hover:shadow-lg transition-all duration-200"
+          >
+            <PlayIcon className="h-4 w-4" />
+            Spiel starten
+          </button>
+
+          {isOwner && isSavedToDB && (
+            <button
+              onClick={handleShare}
+              className={`inline-flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold shadow-md transition-all duration-200 ${localGame.isPublic
+                ? 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                }`}
+              title={localGame.isPublic ? "Veröffentlichung aufheben" : "Veröffentlichen"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
     </article>
   );

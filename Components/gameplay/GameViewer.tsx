@@ -6,6 +6,7 @@ import DatabaseService from '../../Services/DatabaseService';
 import { GRADES, SUBJECTS } from '../../constants';
 import { useSettings } from '../../Context/SettingsContext';
 import { useGame } from '../../Context/GameContext';
+import { useAuth } from '../../Context/AuthContext';
 
 
 const CloseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -16,6 +17,7 @@ const CloseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 
 const GameViewer: React.FC = () => {
     const { activeGame, closeViewer, updateGame, updateGameDetails, saveGame } = useGame();
+    const { user } = useAuth();
 
     if (!activeGame) return null;
 
@@ -81,7 +83,12 @@ const GameViewer: React.FC = () => {
         setSaveStatus('idle');
 
         try {
-            const result = await databaseService.saveGame(currentGame);
+            const gameToSave = {
+                ...currentGame,
+                creatorName: user?.displayName || user?.email || 'Anonymous'
+            };
+
+            const result = await databaseService.saveGame(gameToSave);
 
             if (result.success && result.game) {
                 console.log('Game saved to database:', result.game.id);
@@ -104,7 +111,7 @@ const GameViewer: React.FC = () => {
         } finally {
             setIsSaving(false);
         }
-    }, [currentGame, saveGame, databaseService]);
+    }, [currentGame, saveGame, databaseService, user]);
 
     const canBeSaved = isAiGenerated;
 

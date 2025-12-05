@@ -135,7 +135,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
             <IconButton label="Vorlagen" to="/templates">
               <IconTemplates className="h-5 w-5" />
             </IconButton>
-
+            <IconButton label="Entdecken" to="/explore">
+              <IconSparkles className="h-5 w-5" />
+            </IconButton>
           </div>
         </nav>
       </aside>

@@ -36,6 +36,10 @@ const gameSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  creatorName: {
+    type: String,
+    default: 'Anonymous'
+  },
   playCount: {
     type: Number,
     default: 0
@@ -47,9 +51,14 @@ const gameSchema = new mongoose.Schema({
   dislikes: {
     type: Number,
     default: 0
+  },
+  isPublic: {
+    type: Boolean,
+    default: false,
+    index: true
   }
 }, {
-  timestamps: true // This automatically adds createdAt and updatedAt fields
+  timestamps: true
 });
 
 // Create indexes for better query performance

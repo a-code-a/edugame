@@ -5,7 +5,7 @@ const Game = require('../models/Game');
 // POST /api/games - Save a new game or update existing one
 router.post('/', async (req, res) => {
   try {
-    const { id, title, description, grade, subject, htmlContent, userId } = req.body;
+    const { id, title, description, grade, subject, htmlContent, userId, isPublic, creatorName } = req.body;
 
     // Validate required fields
     if (!id || !title || !description || !grade || !subject || !htmlContent || !userId) {
@@ -23,6 +23,8 @@ router.post('/', async (req, res) => {
         subject,
         htmlContent,
         userId,
+        creatorName,
+        isPublic: isPublic || false,
         updatedAt: Date.now()
       },
       {
@@ -35,6 +37,32 @@ router.post('/', async (req, res) => {
     res.status(200).json(game);
   } catch (error) {
     console.error('Error saving game:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/games/explore - Get all public games
+router.get('/explore', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const skip = (page - 1) * limit;
+
+    const games = await Game.find({ isPublic: true })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Game.countDocuments({ isPublic: true });
+
+    res.json({
+      games,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalGames: total
+    });
+  } catch (error) {
+    console.error('Error fetching public games:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -82,23 +110,33 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.headers.userid || req.query.userId;
-    const { title, description, grade, subject, htmlContent } = req.body;
+    const { title, description, grade, subject, htmlContent, isPublic, creatorName } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
+    const updateData = {
+      title,
+      description,
+      grade,
+      subject,
+      htmlContent,
+      updatedAt: Date.now()
+    };
+
+    if (isPublic !== undefined) {
+      updateData.isPublic = isPublic;
+    }
+
+    if (creatorName) {
+      updateData.creatorName = creatorName;
+    }
+
     // Find and update the game
     const game = await Game.findOneAndUpdate(
       { id, userId },
-      {
-        title,
-        description,
-        grade,
-        subject,
-        htmlContent,
-        updatedAt: Date.now()
-      },
+      updateData,
       { new: true, runValidators: true }
     );
 
@@ -108,6 +146,38 @@ router.put('/:id', async (req, res) => {
 
     res.json(game);
   } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/games/:id/share - Toggle public status
+router.post('/:id/share', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers.userid || req.query.userId;
+    const { isPublic } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    if (isPublic === undefined) {
+      return res.status(400).json({ error: 'isPublic status is required' });
+    }
+
+    const game = await Game.findOneAndUpdate(
+      { id, userId },
+      { isPublic },
+      { new: true }
+    );
+
+    if (!game) {
+      return res.status(404).json({ error: 'Game not found or unauthorized' });
+    }
+
+    res.json(game);
+  } catch (error) {
+    console.error('Error sharing game:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
