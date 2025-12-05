@@ -41,19 +41,60 @@ router.post('/', async (req, res) => {
   }
 });
 
-// GET /api/games/explore - Get all public games
+// GET /api/games/explore - Get all public games with filtering, search, and sorting
 router.get('/explore', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 12;
     const skip = (page - 1) * limit;
 
-    const games = await Game.find({ isPublic: true })
-      .sort({ createdAt: -1 })
+    // Build filter query
+    const filter = { isPublic: true };
+
+    // Subject filter
+    if (req.query.subject && req.query.subject !== 'All') {
+      filter.subject = req.query.subject;
+    }
+
+    // Grade filter
+    if (req.query.grade && req.query.grade !== 'All') {
+      filter.grade = parseInt(req.query.grade);
+    }
+
+    // Text search (title and description)
+    if (req.query.search && req.query.search.trim()) {
+      const searchRegex = new RegExp(req.query.search.trim(), 'i');
+      filter.$or = [
+        { title: searchRegex },
+        { description: searchRegex }
+      ];
+    }
+
+    // Build sort query
+    let sort = { createdAt: -1 }; // Default: newest first
+
+    switch (req.query.sort) {
+      case 'mostPlayed':
+        sort = { playCount: -1, createdAt: -1 };
+        break;
+      case 'trending':
+        // Trending: combination of recent activity and engagement
+        sort = { likes: -1, playCount: -1, createdAt: -1 };
+        break;
+      case 'mostLiked':
+        sort = { likes: -1, createdAt: -1 };
+        break;
+      case 'newest':
+      default:
+        sort = { createdAt: -1 };
+    }
+
+    const games = await Game.find(filter)
+      .sort(sort)
       .skip(skip)
       .limit(limit);
 
-    const total = await Game.countDocuments({ isPublic: true });
+    const total = await Game.countDocuments(filter);
 
     res.json({
       games,
@@ -63,6 +104,24 @@ router.get('/explore', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching public games:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/games/spotlight - Get the featured game (most liked public game)
+router.get('/spotlight', async (req, res) => {
+  try {
+    const spotlightGame = await Game.findOne({ isPublic: true })
+      .sort({ likes: -1, playCount: -1 })
+      .limit(1);
+
+    if (!spotlightGame) {
+      return res.json({ game: null });
+    }
+
+    res.json({ game: spotlightGame });
+  } catch (error) {
+    console.error('Error fetching spotlight game:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

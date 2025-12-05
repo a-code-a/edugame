@@ -210,9 +210,28 @@ class DatabaseService {
     }
   }
 
-  public async getPublicGames(page: number = 1, limit: number = 12): Promise<{ games: Minigame[], totalPages: number }> {
+  public async getPublicGames(
+    page: number = 1,
+    limit: number = 12,
+    options?: {
+      sort?: 'newest' | 'mostPlayed' | 'trending' | 'mostLiked';
+      subject?: string;
+      grade?: number | string;
+      search?: string;
+    }
+  ): Promise<{ games: Minigame[], totalPages: number, totalGames: number }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/games/explore?page=${page}&limit=${limit}`, {
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
+
+      if (options?.sort) params.append('sort', options.sort);
+      if (options?.subject && options.subject !== 'All') params.append('subject', options.subject);
+      if (options?.grade && options.grade !== 'All') params.append('grade', options.grade.toString());
+      if (options?.search) params.append('search', options.search);
+
+      const response = await fetch(`${API_BASE_URL}/games/explore?${params.toString()}`, {
         method: 'GET',
       });
 
@@ -222,9 +241,29 @@ class DatabaseService {
 
       const data = await response.json();
       const games = data.games.map((game: any) => ({ ...game, isSavedToDB: true }));
-      return { games, totalPages: data.totalPages };
+      return { games, totalPages: data.totalPages, totalGames: data.totalGames || 0 };
     } catch (error) {
-      return { games: [], totalPages: 0 };
+      return { games: [], totalPages: 0, totalGames: 0 };
+    }
+  }
+
+  public async getSpotlightGame(): Promise<Minigame | null> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/games/spotlight`, {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data.game) {
+        return { ...data.game, isSavedToDB: true };
+      }
+      return null;
+    } catch (error) {
+      return null;
     }
   }
 
