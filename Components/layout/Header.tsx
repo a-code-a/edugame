@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useAuth } from '../../Context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   onSettingsClick?: () => void;
@@ -12,6 +14,35 @@ const MenuIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 );
 
 const Header: React.FC<HeaderProps> = ({ onSettingsClick, onMenuToggle }) => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Failed to log out', error);
+    }
+  };
+
+  const getUserInitials = () => {
+    if (user?.displayName) {
+      return user.displayName.charAt(0).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return 'U';
+  };
+
+  const getUserName = () => {
+    if (user?.displayName) return user.displayName;
+    if (user?.email) return user.email.split('@')[0];
+    return 'User';
+  };
+
   return (
     <header className="sticky top-0 z-50">
       <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-white/80 via-[#ede9ff]/70 to-white/80 backdrop-blur-xl border-b border-white/60 shadow-[0_10px_60px_-30px_rgba(85,65,165,0.6)]" />
@@ -50,14 +81,34 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick, onMenuToggle }) => {
               </svg>
             </button>
           )}
-          <div className="hidden sm:flex items-center gap-3 rounded-full bg-white/80 border border-white/70 px-3 py-1 shadow-sm">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white font-semibold flex items-center justify-center">
-              K
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-semibold text-slate-700">Klasse 5B</p>
-              <p className="text-xs text-slate-400">Lehrkraft</p>
-            </div>
+
+          <div className="relative">
+            <button
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className="hidden sm:flex items-center gap-3 rounded-full bg-white/80 border border-white/70 px-3 py-1 shadow-sm hover:bg-white transition-colors"
+            >
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white font-semibold flex items-center justify-center">
+                {getUserInitials()}
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-semibold text-slate-700">{getUserName()}</p>
+                <p className="text-xs text-slate-400">Creator</p>
+              </div>
+              <svg className={`h-4 w-4 text-slate-400 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {isProfileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

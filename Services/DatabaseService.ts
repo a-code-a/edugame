@@ -4,7 +4,6 @@ import { Minigame } from '../types';
 const API_BASE_URL = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : 'http://localhost:5000/api';
-const USER_ID = 'user-123'; // In a real app, this would come from authentication
 
 interface SaveGameResponse {
   success: boolean;
@@ -14,10 +13,10 @@ interface SaveGameResponse {
 
 class DatabaseService {
   private static instance: DatabaseService;
-  private userId: string;
+  private userId: string = '';
 
   private constructor() {
-    this.userId = USER_ID;
+    // UserId will be set by AuthContext
   }
 
   public static getInstance(): DatabaseService {
