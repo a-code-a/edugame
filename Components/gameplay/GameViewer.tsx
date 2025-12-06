@@ -102,7 +102,7 @@ const GameViewer: React.FC = () => {
     // We need a way to distinguishing "Saving a totally new game" vs "Saving changes to an existing game".
     // transform `canBeSaved` button to `Save/Update` button.
 
-    const handleDetailChange = (field: 'grade' | 'subject', value: string | number) => {
+    const handleDetailChange = (field: 'grade' | 'subject' | 'title', value: string | number) => {
         const updates = { [field]: field === 'grade' ? Number(value) : value };
         updateGameDetails(activeGame.id, updates);
         setCurrentGame(prev => ({ ...prev, ...updates }));
@@ -189,7 +189,7 @@ const GameViewer: React.FC = () => {
                         {/* Title and badges */}
                         <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-3 flex-wrap">
-                                <h2 className="text-lg font-bold text-slate-900 dark:text-white truncate">{activeGame.title}</h2>
+                                <h2 className="text-lg font-bold text-slate-900 dark:text-white truncate">{currentGame.title}</h2>
 
                                 {/* Read-only badges */}
                                 <div className="flex items-center gap-2">
@@ -333,6 +333,17 @@ const GameViewer: React.FC = () => {
                 {!isFullscreen && showEditPanel && canEdit && ( // Checked canEdit
                     <div className="flex-shrink-0 px-4 py-3 bg-slate-50 border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700">
                         <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">Name:</label>
+                                <input
+                                    type="text"
+                                    value={currentGame.title}
+                                    onChange={(e) => handleDetailChange('title', e.target.value)}
+                                    className="flex-1 px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 dark:bg-slate-700 dark:border-slate-600 dark:text-white"
+                                    placeholder="Spielname eingeben..."
+                                />
+                            </div>
+
                             <div className="flex items-center gap-2">
                                 <label className="text-sm font-medium text-slate-600 dark:text-slate-300">Klasse:</label>
                                 <select
@@ -361,7 +372,7 @@ const GameViewer: React.FC = () => {
                                 </select>
                             </div>
 
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-slate-500 w-full mt-1">
                                 Diese Angaben helfen beim Kategorisieren und Finden deines Spiels.
                             </p>
                         </div>
