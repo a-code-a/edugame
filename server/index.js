@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const gamesRoutes = require('./routes/games');
+const https = require('https');
 
 // Load environment variables
 dotenv.config();
@@ -96,6 +97,27 @@ const startServer = async () => {
   await connectDB();
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+
+    // Self-ping mechanism to keep Render free tier awake
+    // Runs every 14 minutes (render sleeps after 15m inactivity)
+    if (process.env.NODE_ENV === 'production') {
+      const pingInterval = 14 * 60 * 1000; // 14 minutes
+      console.log(`Setting up keep-alive ping every ${pingInterval / 60000} minutes`);
+
+      setInterval(() => {
+        const baseUrl = process.env.RENDER_EXTERNAL_URL || process.env.BACKEND_URL;
+        if (baseUrl) {
+          console.log(`Sending keep-alive ping to ${baseUrl}/api/health`);
+          https.get(`${baseUrl}/api/health`, (res) => {
+            console.log(`Ping status: ${res.statusCode}`);
+          }).on('error', (err) => {
+            console.error(`Ping failed: ${err.message}`);
+          });
+        } else {
+          console.log('Keep-alive skipped: No RENDER_EXTERNAL_URL defined');
+        }
+      }, pingInterval);
+    }
   });
 };
 
