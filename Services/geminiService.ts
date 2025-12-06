@@ -229,12 +229,6 @@ AUFGABE: Generiere 3 VÖLLIG UNTERSCHIEDLICHE und KREATIVE Spielideen für:
 - Fach: ${subjectName}
 - Klassenstufe: ${grade}${keywordPart}
 
-WICHTIG:
-- Sei maximal kreativ! Keine Einschränkungen auf bestimmte Spieltypen.
-- Jedes Spiel soll einzigartig und überraschend sein.
-- Mische verschiedene Spielmechaniken: Quiz, Simulation, Puzzle, Adventure, Strategie, Arcade, etc.
-- Denke an ungewöhnliche Kombinationen und innovative Konzepte.
-- Spiele sollen pädagogisch wertvoll UND unterhaltsam sein.
 
 AUSGABEFORMAT (JSON-Array, sonst nichts):
 [
