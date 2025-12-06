@@ -7,7 +7,7 @@ if (!API_KEY) {
     throw new Error("VITE_GEMINI_API_KEY environment variable not set");
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+const ai = new GoogleGenAI({ apiKey: API_KEY, apiVersion: "v1alpha" });
 
 const GAME_GENERATION_PROMPT = `Erstelle ein HTML-Lernspiel für Kinder.
 
@@ -31,12 +31,21 @@ REGELN:
 
 AUSGABE: Nur HTML-Code, beginne mit <!DOCTYPE html>`;
 
+const MODEL_NAME = 'gemini-3-pro-preview';
+
+export type GenerationMode = 'fast' | 'thinking';
+
+const THINKING_LEVEL_MAP: Record<GenerationMode, "low" | "high"> = {
+    fast: 'low',
+    thinking: 'high',
+};
+
 export interface FilePart {
     mimeType: string;
     data: string; // base64 encoded string
 }
 
-export async function generateMinigameCode(prompt: string, customSettings?: Settings, files?: FilePart[]): Promise<string> {
+export async function generateMinigameCode(prompt: string, customSettings?: Settings, files?: FilePart[], mode: GenerationMode = 'fast'): Promise<string> {
     try {
         // Use custom prompt if enabled and valid, otherwise use enhanced default
         let systemInstruction = GAME_GENERATION_PROMPT;
@@ -90,8 +99,13 @@ Erstelle jetzt das Spiel. Beginne direkt mit <!DOCTYPE html>`;
         }
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: [{ parts: parts }]
+            model: MODEL_NAME,
+            contents: [{ parts: parts }],
+            config: {
+                thinkingConfig: {
+                    thinkingLevel: THINKING_LEVEL_MAP[mode]
+                } as any
+            }
         });
 
         let html = response.text;
@@ -106,7 +120,7 @@ Erstelle jetzt das Spiel. Beginne direkt mit <!DOCTYPE html>`;
     }
 }
 
-export async function refineMinigameCode(prompt: string, existingHtml: string, customSettings?: Settings): Promise<string> {
+export async function refineMinigameCode(prompt: string, existingHtml: string, customSettings?: Settings, mode: GenerationMode = 'fast'): Promise<string> {
     try {
         let refinementInstruction = REFINEMENT_PROMPT;
 
@@ -132,8 +146,13 @@ ${prompt}
 Gib jetzt den vollständigen aktualisierten HTML-Code zurück. Beginne direkt mit <!DOCTYPE html>`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: MODEL_NAME,
             contents: fullPrompt,
+            config: {
+                thinkingConfig: {
+                    thinkingLevel: THINKING_LEVEL_MAP[mode]
+                } as any
+            }
         });
 
         let html = response.text;
@@ -161,8 +180,13 @@ Regeln:
 - NUR die Beschreibung, nichts anderes`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: MODEL_NAME,
             contents: descriptionPrompt,
+            config: {
+                thinkingConfig: {
+                    thinkingLevel: "low"
+                } as any
+            }
         });
 
         const textParts = response.candidates?.[0]?.content?.parts?.filter(part => 'text' in part) || [];
@@ -186,8 +210,13 @@ Regeln:
 - NUR der Titel, nichts anderes`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: MODEL_NAME,
             contents: titlePrompt,
+            config: {
+                thinkingConfig: {
+                    thinkingLevel: "low"
+                } as any
+            }
         });
 
         const textParts = response.candidates?.[0]?.content?.parts?.filter(part => 'text' in part) || [];
@@ -242,8 +271,13 @@ AUSGABEFORMAT (JSON-Array, sonst nichts):
 Antworte NUR mit dem JSON-Array, kein Markdown, keine Erklärungen.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: MODEL_NAME,
             contents: ideaPrompt,
+            config: {
+                thinkingConfig: {
+                    thinkingLevel: "high"
+                } as any
+            }
         });
 
         let text = response.text.trim();

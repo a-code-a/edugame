@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { generateMinigameCode, generateGameDescription, generateGameTitle, generateGameIdeas, GameIdea, FilePart } from '../../Services/geminiService';
+import { generateMinigameCode, generateGameDescription, generateGameTitle, generateGameIdeas, GameIdea, FilePart, GenerationMode } from '../../Services/geminiService';
 import DatabaseService from '../../Services/DatabaseService';
 import { Minigame } from '../../types';
 import { useSettings } from '../../Context/SettingsContext';
@@ -72,6 +72,9 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
   const [inspirationKeywords, setInspirationKeywords] = useState('');
   const [ideas, setIdeas] = useState<GameIdea[]>([]);
   const [isGeneratingIdeas, setIsGeneratingIdeas] = useState(false);
+
+  // Generation mode state
+  const [generationMode, setGenerationMode] = useState<GenerationMode>('fast');
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -168,7 +171,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
     setError(null);
     try {
       const [htmlContent, aiDescription, aiTitle] = await Promise.all([
-        generateMinigameCode(prompt, settings, attachedFiles),
+        generateMinigameCode(prompt, settings, attachedFiles, generationMode),
         generateGameDescription(prompt || "Spiel basierend auf hochgeladenen Dateien"),
         generateGameTitle(prompt || "Neues Spiel")
       ]);
@@ -268,8 +271,8 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
               <button
                 onClick={() => setShowInspiration(!showInspiration)}
                 className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg transition-all ${showInspiration
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'text-slate-500 hover:text-amber-600 hover:bg-amber-50'
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'text-slate-500 hover:text-amber-600 hover:bg-amber-50'
                   }`}
               >
                 <SparklesIcon className="h-4 w-4" />
@@ -417,6 +420,37 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
               {error}
             </div>
           )}
+        </div>
+
+        {/* Generation Mode Toggle */}
+        <div className="flex items-center justify-between py-2 border-t border-slate-100">
+          <span className="text-xs font-medium text-slate-500">Generierungsmodus</span>
+          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg">
+            <button
+              onClick={() => setGenerationMode('fast')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${generationMode === 'fast'
+                  ? 'bg-white text-purple-700 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+                }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                <path d="M11.983 1.907a.75.75 0 00-1.292-.657l-8.5 9.5A.75.75 0 002.75 12h6.572l-1.305 6.093a.75.75 0 001.292.657l8.5-9.5A.75.75 0 0017.25 8h-6.572l1.305-6.093z" />
+              </svg>
+              Schnell
+            </button>
+            <button
+              onClick={() => setGenerationMode('thinking')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${generationMode === 'thinking'
+                  ? 'bg-white text-indigo-700 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-700'
+                }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                <path d="M10 2a8 8 0 00-7.984 7.457.77.77 0 01-.227.514A4.25 4.25 0 104.25 18h11.5a4.25 4.25 0 002.461-7.687.77.77 0 01-.227-.172A8 8 0 0010 2z" />
+              </svg>
+              Denken
+            </button>
+          </div>
         </div>
 
         <button
