@@ -181,8 +181,8 @@ export default function ExplorePage() {
                                                     key={pageNum}
                                                     onClick={() => setPage(pageNum)}
                                                     className={`w-10 h-10 rounded-xl text-sm font-medium transition-all ${page === pageNum
-                                                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                                                            : 'text-slate-600 hover:bg-slate-100'
+                                                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                                                        : 'text-slate-600 hover:bg-slate-100'
                                                         }`}
                                                 >
                                                     {pageNum}
@@ -210,20 +210,8 @@ export default function ExplorePage() {
                     )}
                 </div>
 
-                {/* Empty state encouragement */}
-                {!loading && games.length === 0 && !debouncedSearch && (
-                    <div className="text-center py-12">
-                        <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center">
-                            <svg className="w-12 h-12 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                        </div>
-                        <h3 className="text-xl font-semibold text-slate-800 mb-2">Noch keine Spiele verfügbar</h3>
-                        <p className="text-slate-500 max-w-md mx-auto">
-                            Sei der Erste! Erstelle ein Spiel und teile es mit der Community.
-                        </p>
-                    </div>
-                )}
+                {/* Empty state encouragement - removed as it is handled by MinigameGrid */}
+                {!loading && games.length === 0 && !debouncedSearch && null}
             </div>
         </div>
     );

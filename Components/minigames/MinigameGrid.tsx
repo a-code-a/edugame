@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Minigame } from '../../types';
 import MinigameCard from './MinigameCard';
 
@@ -8,27 +9,31 @@ interface MinigameGridProps {
   onDelete?: (gameId: string) => void;
 }
 
-const EmptyState: React.FC = () => (
-  <div className="flex flex-col items-center justify-center gap-4 rounded-[32px] border border-dashed border-slate-300 bg-white/70 px-10 py-16 text-center shadow-inner">
-    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-indigo-100 text-purple-600 shadow">
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.4} stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-      </svg>
+const EmptyState: React.FC = () => {
+  const navigate = useNavigate();
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 rounded-[32px] border border-dashed border-slate-300 bg-white/70 px-10 py-16 text-center shadow-inner">
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-100 to-indigo-100 text-purple-600 shadow">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" strokeWidth={1.4} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+      </div>
+      <div>
+        <h3 className="text-xl font-semibold text-slate-800">Keine Spiele gefunden</h3>
+        <p className="mt-2 text-sm text-slate-500">
+          Passe deine Filter an oder lasse die KI ein neues Minigame erzeugen.
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={() => navigate('/')}
+        className="rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 hover:shadow-xl transition-all hover:scale-105"
+      >
+        Ideen mit Vibe Coder starten
+      </button>
     </div>
-    <div>
-      <h3 className="text-xl font-semibold text-slate-800">Keine Spiele gefunden</h3>
-      <p className="mt-2 text-sm text-slate-500">
-        Passe deine Filter an oder lasse die KI ein neues Minigame erzeugen.
-      </p>
-    </div>
-    <button
-      type="button"
-      className="rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-purple-300/40 hover:shadow-xl"
-    >
-      Ideen mit Vibe Coder starten
-    </button>
-  </div>
-);
+  );
+};
 
 const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay, onDelete }) => {
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -80,8 +85,8 @@ const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay, onDelete }) 
                 key={page}
                 onClick={() => handlePageChange(page)}
                 className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${currentPage === page
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                    : 'text-slate-600 hover:bg-slate-100'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                  : 'text-slate-600 hover:bg-slate-100'
                   }`}
               >
                 {page}
