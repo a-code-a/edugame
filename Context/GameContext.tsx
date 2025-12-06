@@ -96,11 +96,15 @@ export const GameProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
     };
 
     const saveGame = (savedGame: Minigame) => {
-        setMinigames((prevGames) =>
-            prevGames.map((game) =>
-                game.id === savedGame.id ? { ...game, ...savedGame, isSavedToDB: true } : game
-            ),
-        );
+        setMinigames((prevGames) => {
+            const exists = prevGames.some((game) => game.id === savedGame.id);
+            if (exists) {
+                return prevGames.map((game) =>
+                    game.id === savedGame.id ? { ...game, ...savedGame, isSavedToDB: true } : game
+                );
+            }
+            return [{ ...savedGame, isSavedToDB: true }, ...prevGames];
+        });
         setActiveGame((prevGame) =>
             prevGame && prevGame.id === savedGame.id ? { ...prevGame, ...savedGame, isSavedToDB: true } : prevGame
         );

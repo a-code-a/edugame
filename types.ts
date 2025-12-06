@@ -17,6 +17,7 @@ export interface Minigame {
   dislikedBy?: string[];
   isPublic?: boolean;
   creatorName?: string;
+  forkedFrom?: string;
 }
 
 export interface Settings {

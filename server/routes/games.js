@@ -382,4 +382,55 @@ router.post('/:id/dislike', async (req, res) => {
   }
 });
 
+// POST /api/games/:id/fork - Fork a game
+router.post('/:id/fork', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers.userid || req.query.userId;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Find the original game
+    const originalGame = await Game.findOne({ id });
+
+    if (!originalGame) {
+      return res.status(404).json({ error: 'Game not found' });
+    }
+
+    // Create a new ID for the forked game
+    // Format: fork-[timestamp]-[random]
+    const newId = `fork-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+    // Create the new game object
+    const forkedGame = new Game({
+      id: newId,
+      title: `${originalGame.title} (Remix)`,
+      description: originalGame.description,
+      htmlContent: originalGame.htmlContent,
+      grade: originalGame.grade,
+      subject: originalGame.subject,
+      userId: userId, // The new owner
+      creatorName: req.body.creatorName || 'Anonymous', // Current user's name
+      isPublic: false, // Private by default
+      playCount: 0,
+      likes: 0,
+      dislikes: 0,
+      likedBy: [],
+      dislikedBy: [],
+      forkedFrom: originalGame.id,
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    });
+
+    const savedGame = await forkedGame.save();
+
+    res.json(savedGame);
+  } catch (error) {
+    console.error('Error forking game:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

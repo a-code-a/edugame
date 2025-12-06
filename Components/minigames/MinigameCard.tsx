@@ -109,7 +109,7 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
   }, [game]);
 
   const handleDelete = () => {
-    if (onDelete && isAiGenerated) {
+    if (onDelete && (isAiGenerated || isOwner)) {
       onDelete(game.id);
     }
   };
@@ -236,7 +236,7 @@ const MinigameCard: React.FC<MinigameCardProps> = ({ game, onPlay, onDelete }) =
               </div>
             )}
           </div>
-          {isAiGenerated && onDelete && (
+          {(isAiGenerated || isOwner) && onDelete && (
             <button
               onClick={handleDelete}
               className="flex-shrink-0 inline-flex items-center justify-center h-8 w-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors"

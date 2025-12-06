@@ -210,6 +210,33 @@ class DatabaseService {
     }
   }
 
+  public async forkGame(gameId: string, creatorName?: string): Promise<SaveGameResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/games/${gameId}/fork`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'userId': this.userId,
+        },
+        body: JSON.stringify({
+          creatorName: creatorName || 'Anonymous'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const newGame = await response.json();
+      return { success: true, game: newGame };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  }
+
   public async getPublicGames(
     page: number = 1,
     limit: number = 12,

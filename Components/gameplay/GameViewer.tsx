@@ -23,7 +23,7 @@ const CloseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 );
 
 const GameViewer: React.FC = () => {
-    const { activeGame, closeViewer, updateGame, updateGameDetails, saveGame } = useGame();
+    const { activeGame, closeViewer, updateGame, updateGameDetails, saveGame, playGame } = useGame();
     const { user } = useAuth();
 
     if (!activeGame) return null;
@@ -41,6 +41,8 @@ const GameViewer: React.FC = () => {
     const [showEditPanel, setShowEditPanel] = useState(false);
     const { settings } = useSettings();
     const databaseService = DatabaseService.getInstance();
+
+    const [isForking, setIsForking] = useState(false);
 
     useEffect(() => {
         setIsShowing(true);
@@ -80,7 +82,25 @@ const GameViewer: React.FC = () => {
         }
     }, [messages, currentGame, updateGame, activeGame.id, settings]);
 
-    const isAiGenerated = activeGame.id.startsWith('gen-');
+    const isOwner = user && activeGame.userId === user.uid;
+    // Allow editing if it's an AI generated game AND the user is the owner
+    // OR if it's a newly generated game (starts with gen-) which implies ownership in the current session context usually, 
+    // but better to rely on isOwner if possible. 
+    // For "gen-" IDs, they might not have a userId set yet if not saved, so we fallback to assuming ownership for unsaved games in non-public context.
+    // However, looking at VibeCoder, it doesn't set userId until save.
+    // So: If id starts with 'gen-', it's local and editable. 
+    // If it has a real ID, check ownership.
+    const canEdit = activeGame.id.startsWith('gen-') || isOwner;
+    const canBeSaved = activeGame.id.startsWith('gen-'); // Only save NEW games, existing ones calculate updates differently or autosave?
+    // Actually, existing games should overlap 'Save' with 'Update'?
+    // The current logic `canBeSaved = isAiGenerated` (starts with gen-) implies we only "Save" new games. 
+    // For existing games, we might want an "Update" button if modified? 
+    // For now, let's keep `canBeSaved` as is for the "Save to Database" button which creates a NEW entry usually.
+    // BUT we want to allow saving/updating changes to owned games.
+    // Let's refine:
+
+    // We need a way to distinguishing "Saving a totally new game" vs "Saving changes to an existing game".
+    // transform `canBeSaved` button to `Save/Update` button.
 
     const handleDetailChange = (field: 'grade' | 'subject', value: string | number) => {
         const updates = { [field]: field === 'grade' ? Number(value) : value };
@@ -99,6 +119,9 @@ const GameViewer: React.FC = () => {
                 creatorName: user?.displayName || user?.email || 'Anonymous'
             };
 
+            // If it's an existing game (not gen-), using saveGame might create a duplicate if not careful, 
+            // but DatabaseService.saveGame uses POST /games which does findOneAndUpdate with upsert based on ID.
+            // So it acts as an Upsert. Safe to use.
             const result = await databaseService.saveGame(gameToSave);
 
             if (result.success && result.game) {
@@ -125,7 +148,30 @@ const GameViewer: React.FC = () => {
         }
     }, [currentGame, saveGame, databaseService, user]);
 
-    const canBeSaved = isAiGenerated;
+    const handleFork = async () => {
+        setIsForking(true);
+        setSaveError(null);
+        try {
+            // Pass user's name for the creator field of the new copy
+            const creatorName = user?.displayName || user?.email || 'Anonymous';
+            const result = await databaseService.forkGame(activeGame.id, creatorName);
+
+            if (result.success && result.game && saveGame) {
+                // Add the new game to the local context
+                saveGame(result.game);
+                // Switch to the new game
+                playGame(result.game);
+            } else {
+                setSaveError(result.error || "Fehler beim Kopieren.");
+            }
+        } catch (err) {
+            console.error(err);
+            setSaveError("Fehler beim Kopieren.");
+        } finally {
+            setIsForking(false);
+        }
+    };
+
     const subjectInfo = SUBJECT_LABELS[currentGame.subject] || { label: currentGame.subject, icon: '📚', color: 'bg-slate-100 text-slate-700' };
 
     return (
@@ -164,8 +210,30 @@ const GameViewer: React.FC = () => {
 
                         {/* Actions */}
                         <div className="flex items-center gap-2">
-                            {/* Edit button for AI generated games */}
-                            {isAiGenerated && (
+                            {/* Fork/Remix button for non-owners */}
+                            {!isOwner && user && (
+                                <button
+                                    onClick={handleFork}
+                                    disabled={isForking}
+                                    className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-purple-100 text-purple-700 text-sm font-medium hover:bg-purple-200 transition-colors disabled:opacity-50"
+                                    title="Spiel in meine Projekte kopieren, um es zu bearbeiten"
+                                >
+                                    {isForking ? (
+                                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                                        </svg>
+                                    )}
+                                    <span className="hidden sm:inline">Remix</span>
+                                </button>
+                            )}
+
+                            {/* Edit button for Owners (or AI generated new games) */}
+                            {canEdit && (
                                 <button
                                     onClick={() => setShowEditPanel(!showEditPanel)}
                                     className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${showEditPanel
@@ -181,8 +249,8 @@ const GameViewer: React.FC = () => {
                                 </button>
                             )}
 
-                            {/* Save button */}
-                            {canBeSaved && (
+                            {/* Save button (Only show if owner) */}
+                            {canEdit && (
                                 <button
                                     onClick={handleSaveToDatabase}
                                     disabled={isSaving || saveStatus === 'success'}
@@ -217,15 +285,19 @@ const GameViewer: React.FC = () => {
                                 </button>
                             )}
 
-                            {/* Saved indicator for non-AI games */}
-                            {activeGame.isSavedToDB && !canBeSaved && (
-                                <div className="inline-flex items-center gap-2 rounded-xl bg-green-50 text-green-600 px-3 py-2 text-xs font-semibold">
-                                    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    <span className="hidden sm:inline">Gespeichert</span>
-                                </div>
-                            )}
+                            {/* Saved indicator for non-AI games - wait, we just made them all editable if owned. 
+                                So this indicator is maybe less useful or should be adapted. 
+                                It was: "Saved indicator for non-AI games" (implied read only).
+                                Now checks `activeGame.isSavedToDB && !canBeSaved`.
+                                `canBeSaved` was logic for new games.
+                                Let's simplify: if it's saved and NOT editable (i.e. public game of another user), show "Saved" or just nothing?
+                                If it's another user's game, we don't need to say "Saved".
+                                So we can remove this block or only show it if something... 
+                                Actually, let's keep it simple: If you can edit it, you see the save button.
+                                If you can't edit it, you see the Fork button.
+                                We might want to remove this "Saved" badge as it's redundant/confusing in the new flow.
+                             */}
+
 
                             {/* Fullscreen button */}
                             <button
@@ -258,7 +330,7 @@ const GameViewer: React.FC = () => {
                 )}
 
                 {/* Edit Panel (collapsible) */}
-                {!isFullscreen && showEditPanel && isAiGenerated && (
+                {!isFullscreen && showEditPanel && canEdit && ( // Checked canEdit
                     <div className="flex-shrink-0 px-4 py-3 bg-slate-50 border-b border-slate-200 dark:bg-slate-800 dark:border-slate-700">
                         <div className="flex flex-wrap items-center gap-4">
                             <div className="flex items-center gap-2">
@@ -326,7 +398,8 @@ const GameViewer: React.FC = () => {
                             </button>
                         )}
                     </div>
-                    {!isFullscreen && isAiGenerated && (
+                    {/* Chat Only if can edit */}
+                    {!isFullscreen && canEdit && (
                         <GameChat
                             messages={messages}
                             onSendMessage={handleSendMessage}
