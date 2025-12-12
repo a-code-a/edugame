@@ -5,7 +5,6 @@ import { NavLink, useNavigate } from 'react-router-dom';
 interface SidebarProps {
   isMobileOpen: boolean;
   onCloseMobile: () => void;
-  onCreateClick: () => void;
 }
 
 const IconButton: React.FC<React.PropsWithChildren<{ label: string; to: string }>> = ({ label, to, children }) => (
@@ -69,13 +68,10 @@ const IconClose: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
-const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreateClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile }) => {
   const navigate = useNavigate();
 
-  const handleCreateClick = () => {
-    navigate('/');
-    onCreateClick();
-  };
+
 
   return (
     <>
@@ -90,16 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
           }`}
         aria-label="Hauptnavigation"
       >
-        <div className="flex items-center justify-between px-6 pt-6 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-500 text-white font-bold text-lg flex items-center justify-center shadow-lg">
-              E
-            </div>
-            <div>
-              <p className="text-base font-semibold text-slate-900 dark:text-white">EduGame</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Creator Studio</p>
-            </div>
-          </div>
+        <div className="flex items-center justify-end px-6 pt-6 pb-4">
           <button
             type="button"
             onClick={onCloseMobile}
@@ -107,17 +94,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile, onCreate
             aria-label="Navigation schließen"
           >
             <IconClose className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="px-6">
-          <button
-            type="button"
-            onClick={handleCreateClick}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold py-3 shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all duration-200"
-          >
-            <IconPlus className="h-5 w-5" />
-            Neues Spiel erstellen
           </button>
         </div>
 

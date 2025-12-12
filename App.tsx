@@ -49,9 +49,7 @@ function AppContent() {
     updateSettings(newSettings);
   };
 
-  const handleCreateFromSidebar = () => {
-    setIsSidebarOpen(false);
-  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f5f3ff] via-[#f6f9ff] to-[#fef6ff] flex text-slate-900">
@@ -59,7 +57,6 @@ function AppContent() {
         <Sidebar
           isMobileOpen={isSidebarOpen}
           onCloseMobile={() => setIsSidebarOpen(false)}
-          onCreateClick={handleCreateFromSidebar}
         />
       )}
       <div className="flex-1 flex flex-col relative overflow-hidden">
