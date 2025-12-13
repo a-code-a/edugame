@@ -56,7 +56,7 @@ function AppContent() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f5f3ff] via-[#f6f9ff] to-[#fef6ff] flex flex-col text-slate-900">
+    <div className="h-screen overflow-hidden bg-gradient-to-br from-[#f5f3ff] via-[#f6f9ff] to-[#fef6ff] flex flex-col text-slate-900">
       {user && (
         <Header
           onSettingsClick={() => setIsSettingsOpen(true)}
