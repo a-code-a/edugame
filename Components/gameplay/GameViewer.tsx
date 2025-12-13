@@ -129,9 +129,8 @@ const GameViewer: React.FC = () => {
     // Allow editing if:
     // 1. The user is the owner (creator or remixer)
     // 2. It is a strictly LOCAL, UNSAVED game (e.g. just generated in Vibe Coder)
-    //    We check this by id starting with 'gen-' AND NOT being saved to the DB.
-    //    Public games (even if they have 'gen-' ids) will have isSavedToDB=true and fail this check unless owned.
-    const canEdit = isOwner || (activeGame.id.startsWith('gen-') && !activeGame.isSavedToDB);
+    //    We check this by id starting with 'gen-' AND NOT having a userId attached yet.
+    const canEdit = isOwner || (activeGame.id.startsWith('gen-') && !activeGame.userId);
 
     // Logic for "Save" vs "Update" is handled by the button label logic later, 
     // but `canEdit` controls the visibility of the whole edit UI (chat, details panel).

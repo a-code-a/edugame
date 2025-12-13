@@ -78,7 +78,7 @@ class DatabaseService {
       }
 
       const games = await response.json();
-      return games;
+      return games.map((game: any) => ({ ...game, isSavedToDB: true }));
     } catch (error) {
       return [];
     }
@@ -94,7 +94,8 @@ class DatabaseService {
         },
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      return await response.json();
+      const data = await response.json();
+      return data.map((game: any) => ({ ...game, isSavedToDB: true }));
     } catch (error) {
       console.error('Error fetching history:', error);
       return [];
@@ -111,7 +112,8 @@ class DatabaseService {
         },
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      return await response.json();
+      const data = await response.json();
+      return data.map((game: any) => ({ ...game, isSavedToDB: true }));
     } catch (error) {
       console.error('Error fetching liked games:', error);
       return [];

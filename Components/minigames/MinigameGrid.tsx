@@ -7,6 +7,9 @@ interface MinigameGridProps {
   games: Minigame[];
   onPlay: (game: Minigame) => void;
   onDelete?: (gameId: string) => void;
+  forceShowDelete?: boolean;
+  deleteTooltip?: string;
+  deleteIcon?: React.ReactNode;
 }
 
 const EmptyState: React.FC = () => {
@@ -35,7 +38,7 @@ const EmptyState: React.FC = () => {
   );
 };
 
-const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay, onDelete }) => {
+const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay, onDelete, forceShowDelete, deleteTooltip, deleteIcon }) => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const itemsPerPage = 6;
 
@@ -62,7 +65,15 @@ const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay, onDelete }) 
     <div className="space-y-8">
       <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {currentGames.map((game) => (
-          <MinigameCard key={game.id} game={game} onPlay={onPlay} onDelete={onDelete} />
+          <MinigameCard
+            key={game.id}
+            game={game}
+            onPlay={onPlay}
+            onDelete={onDelete}
+            forceShowDelete={forceShowDelete}
+            deleteTooltip={deleteTooltip}
+            deleteIcon={deleteIcon}
+          />
         ))}
       </div>
 
