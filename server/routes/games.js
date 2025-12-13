@@ -109,23 +109,7 @@ router.get('/explore', async (req, res) => {
   }
 });
 
-// GET /api/games/spotlight - Get the featured game (most liked public game)
-router.get('/spotlight', async (req, res) => {
-  try {
-    const spotlightGame = await Game.findOne({ isPublic: true })
-      .sort({ likes: -1, playCount: -1 })
-      .limit(1);
 
-    if (!spotlightGame) {
-      return res.json({ game: null });
-    }
-
-    res.json({ game: spotlightGame });
-  } catch (error) {
-    console.error('Error fetching spotlight game:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
 
 // GET /api/games/history - Get played games history for a user
 router.get('/history', async (req, res) => {

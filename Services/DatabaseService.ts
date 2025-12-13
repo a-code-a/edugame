@@ -308,25 +308,7 @@ class DatabaseService {
     }
   }
 
-  public async getSpotlightGame(): Promise<Minigame | null> {
-    try {
-      const response = await fetch(`${API_BASE_URL}/games/spotlight`, {
-        method: 'GET',
-      });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      if (data.game) {
-        return { ...data.game, isSavedToDB: true };
-      }
-      return null;
-    } catch (error) {
-      return null;
-    }
-  }
 
   public async togglePublicStatus(gameId: string, isPublic: boolean): Promise<SaveGameResponse> {
     try {

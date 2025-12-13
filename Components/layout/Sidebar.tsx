@@ -119,7 +119,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, isCollapsed, onCloseMob
               </p>
             )}
             <div className="space-y-1">
-              <IconButton label="Projekte" to="/projects" isCollapsed={isCollapsed}>
+              <IconButton label="Meine Projekte" to="/projects" isCollapsed={isCollapsed}>
                 <IconProjects className="h-5 w-5" />
               </IconButton>
               <IconButton label="Playlists" to="/playlists" isCollapsed={isCollapsed}>

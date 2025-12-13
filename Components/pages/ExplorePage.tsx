@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Minigame } from '../../types';
 import DatabaseService from '../../Services/DatabaseService';
 import MinigameGrid from '../minigames/MinigameGrid';
-import SpotlightCard from '../explore/SpotlightCard';
 import ExploreFilters from '../explore/ExploreFilters';
 import { useGame } from '../../Context/GameContext';
 
@@ -25,9 +24,7 @@ function useDebounce<T>(value: T, delay: number): T {
 
 export default function ExplorePage() {
     const [games, setGames] = useState<Minigame[]>([]);
-    const [spotlightGame, setSpotlightGame] = useState<Minigame | null>(null);
     const [loading, setLoading] = useState(true);
-    const [spotlightLoading, setSpotlightLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [totalGames, setTotalGames] = useState(0);
@@ -41,17 +38,6 @@ export default function ExplorePage() {
     const debouncedSearch = useDebounce(search, 300);
 
     const { playGame } = useGame();
-
-    // Load spotlight game
-    useEffect(() => {
-        const loadSpotlight = async () => {
-            setSpotlightLoading(true);
-            const game = await DatabaseService.getInstance().getSpotlightGame();
-            setSpotlightGame(game);
-            setSpotlightLoading(false);
-        };
-        loadSpotlight();
-    }, []);
 
     // Load games when filters or page changes
     useEffect(() => {
@@ -85,23 +71,7 @@ export default function ExplorePage() {
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
             <div className="px-4 sm:px-8 lg:px-16 py-8 max-w-[1600px] mx-auto space-y-10">
-                {/* Header */}
-                <div className="text-center max-w-2xl mx-auto">
-                    <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                        Entdecken
-                    </h1>
-                    <p className="text-lg text-slate-600">
-                        Stöbere durch Spiele, die von anderen Lehrkräften erstellt wurden.
-                        Finde Inspiration oder nutze sie direkt im Unterricht.
-                    </p>
-                </div>
 
-                {/* Spotlight Section */}
-                {spotlightLoading ? (
-                    <div className="animate-pulse rounded-3xl bg-gradient-to-r from-indigo-200 to-purple-200 h-72" />
-                ) : spotlightGame ? (
-                    <SpotlightCard game={spotlightGame} onPlay={handlePlayGame} />
-                ) : null}
 
                 {/* Filters */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200/60 shadow-sm p-6">
