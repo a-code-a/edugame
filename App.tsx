@@ -14,6 +14,8 @@ import ProjectsPage from '@/Components/pages/ProjectsPage';
 import ExplorePage from '@/Components/pages/ExplorePage';
 import HistoryPage from '@/Components/pages/HistoryPage';
 import LikedGamesPage from '@/Components/pages/LikedGamesPage';
+import PlaylistsPage from '@/Components/pages/PlaylistsPage';
+import PlaylistDetailPage from '@/Components/pages/PlaylistDetailPage';
 import Login from '@/Components/auth/Login';
 import Signup from '@/Components/auth/Signup';
 import DatabaseService from './Services/DatabaseService';
@@ -118,6 +120,24 @@ function AppContent() {
                 element={
                   <ProtectedRoute>
                     <LikedGamesPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/playlists"
+                element={
+                  <ProtectedRoute>
+                    <PlaylistsPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/playlists/:id"
+                element={
+                  <ProtectedRoute>
+                    <PlaylistDetailPage />
                   </ProtectedRoute>
                 }
               />

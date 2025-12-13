@@ -42,6 +42,42 @@ const GameViewer: React.FC = () => {
     const { settings } = useSettings();
     const databaseService = DatabaseService.getInstance();
 
+    // Playlist logic
+    const [showPlaylistMenu, setShowPlaylistMenu] = useState(false);
+    const [playlists, setPlaylists] = useState<any[]>([]);
+    const [loadingPlaylists, setLoadingPlaylists] = useState(false);
+    const playlistMenuRef = React.useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (playlistMenuRef.current && !playlistMenuRef.current.contains(event.target as Node)) {
+                setShowPlaylistMenu(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const fetchPlaylists = async () => {
+        setLoadingPlaylists(true);
+        const data = await databaseService.getPlaylists();
+        setPlaylists(data);
+        setLoadingPlaylists(false);
+    };
+
+    const handlePlaylistClick = () => {
+        if (!showPlaylistMenu) {
+            fetchPlaylists();
+        }
+        setShowPlaylistMenu(!showPlaylistMenu);
+    };
+
+    const handleAddToPlaylist = async (playlistId: string) => {
+        await databaseService.addGameToPlaylist(playlistId, currentGame.id);
+        setShowPlaylistMenu(false);
+        // Optional: Show success feedback
+    };
+
     const [isForking, setIsForking] = useState(false);
 
     useEffect(() => {
@@ -210,6 +246,51 @@ const GameViewer: React.FC = () => {
 
                         {/* Actions */}
                         <div className="flex items-center gap-2">
+                            {/* Add to Playlist Button - only for logged in users */}
+                            {user && (
+                                <div className="relative" ref={playlistMenuRef}>
+                                    <button
+                                        onClick={handlePlaylistClick}
+                                        className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${showPlaylistMenu ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                        title="Zur Playlist hinzufügen"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10.5v6m3-3H9m4.06-7.19-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+                                        </svg>
+                                        <span className="hidden sm:inline">Speichern</span>
+                                    </button>
+
+                                    {showPlaylistMenu && (
+                                        <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-1 z-50">
+                                            {loadingPlaylists ? (
+                                                <div className="px-4 py-3 text-sm text-slate-400 text-center">Laden...</div>
+                                            ) : playlists.length > 0 ? (
+                                                <>
+                                                    <div className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-50">Playlist wählen</div>
+                                                    <div className="max-h-60 overflow-y-auto">
+                                                        {playlists.map(p => (
+                                                            <button
+                                                                key={p._id}
+                                                                onClick={() => handleAddToPlaylist(p._id)}
+                                                                className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors flex items-center gap-2"
+                                                            >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 opacity-50">
+                                                                    <path d="M3.75 3a.75.75 0 00-.75.75v.5c0 .414.336.75.75.75H4c.603 0 1.17.2 1.622.544.453.344.628.601.628 1.206 0 .5-.213.914-.54 1.214-.298.275-.66.45-1.008.577A7.906 7.906 0 013.75 8a.75.75 0 000 1.5c.312 0 .62.016.923.045.34.034.698-.109.917-.384.22-.275.525-.461.763-.607.238-.146.477-.258.972-.258.5 0 .914.213 1.214.54.275.298.45.66.577 1.008.127.35.18.707.18 1.077v.24c0 .37-.052.727-.18 1.077-.126.348-.302.71-.577 1.008-.3.327-.714.54-1.214.54-.495 0-.734-.112-.972-.258-.238-.146-.543-.332-.763-.607a.75.75 0 00-1.157.868c.28.468.643.83 1.066 1.085.467.28.985.42 1.536.42 1.085 0 2.015-.55 2.607-1.343.593-.793.774-1.728.774-2.56 0-.832-.18-1.767-.774-2.56-.592-.793-1.522-1.343-2.607-1.343-.43 0-.825.086-1.185.234.08-.275.145-.553.188-.84.456-.226.96-.344 1.497-.344 1.085 0 2.015-.55 2.607-1.343.593-.793.774-1.728.774-2.56 0-.832-.18-1.767-.774-2.56-.592-.793-1.522-1.343-2.607-1.343-.551 0-1.069.14-1.536.42-.423.254-.786.617-1.066 1.085a.75.75 0 101.284.77c.184-.307.414-.523.633-.654.22-.132.535-.221.685-.221.056 0 .106.012.146.024a.75.75 0 00.95-.928C9.8 3.23 9.42 3 9 3H3.75z" />
+                                                                    <path d="M12.75 3a.75.75 0 00-.75.75v.5c0 .414.336.75.75.75h.25c.603 0 1.17.2 1.622.544.453.344.628.601.628 1.206 0 .5-.213.914-.54 1.214-.298.275-.66.45-1.008.577A7.906 7.906 0 0112.75 8a.75.75 0 000 1.5c.312 0 .62.016.923.045.34.034.698-.109.917-.384.22-.275.525-.461.763-.607.238-.146.477-.258.972-.258.5 0 .914.213 1.214.54.275.298.45.66.577 1.008.127.35.18.707.18 1.077v.24c0 .37-.052.727-.18 1.077-.126.348-.302.71-.577 1.008-.3.327-.714.54-1.214.54-.495 0-.734-.112-.972-.258-.238-.146-.543-.332-.763-.607a.75.75 0 00-1.157.868c.28.468.643.83 1.066 1.085.467.28.985.42 1.536.42 1.085 0 2.015-.55 2.607-1.343.593-.793.774-1.728.774-2.56 0-.832-.18-1.767-.774-2.56-.592-.793-1.522-1.343-2.607-1.343-.43 0-.825.086-1.185.234.08-.275.145-.553.188-.84.456-.226.96-.344 1.497-.344 1.085 0 2.015-.55 2.607-1.343.593-.793.774-1.728.774-2.56 0-.832-.18-1.767-.774-2.56-.592-.793-1.522-1.343-2.607-1.343-.551 0-1.069.14-1.536.42-.423.254-.786.617-1.066 1.085a.75.75 0 101.284.77c.184-.307.414-.523.633-.654.22-.132.535-.221.685-.221.056 0 .106.012.146.024a.75.75 0 00.95-.928c.185-.436.25-1.01.18-1.464" />
+                                                                </svg>
+                                                                {p.title}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="px-4 py-3 text-sm text-slate-500 text-center">Keine Playlists gefunden</div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Fork/Remix button for non-owners */}
                             {!isOwner && user && (
                                 <button

@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const gamesRoutes = require('./routes/games');
+const playlistRoutes = require('./routes/playlists');
 const https = require('https');
 
 // Load environment variables
@@ -59,6 +60,7 @@ const connectDB = async () => {
 
 // Routes
 app.use('/api/games', gamesRoutes);
+app.use('/api/playlists', playlistRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

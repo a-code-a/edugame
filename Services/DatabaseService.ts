@@ -335,6 +335,95 @@ class DatabaseService {
     }
   }
 
+  // Playlist methods
+  public async getPlaylists(): Promise<any[]> {
+    if (!this.userId) return [];
+    try {
+      const response = await fetch(`${API_BASE_URL}/playlists`, {
+        headers: { 'userId': this.userId }
+      });
+      if (!response.ok) throw new Error('Failed to fetch playlists');
+      return await response.json();
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  }
+
+  public async createPlaylist(title: string, description?: string, isPublic: boolean = false): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/playlists`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'userId': this.userId
+        },
+        body: JSON.stringify({ title, description, isPublic })
+      });
+      if (!response.ok) throw new Error('Failed to create playlist');
+      return await response.json();
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  public async getPlaylist(id: string): Promise<any> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/playlists/${id}`, {
+        headers: { 'userId': this.userId }
+      });
+      if (!response.ok) throw new Error('Failed to fetch playlist');
+      return await response.json();
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  public async addGameToPlaylist(playlistId: string, gameId: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/playlists/${playlistId}/games`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'userId': this.userId
+        },
+        body: JSON.stringify({ gameId })
+      });
+      return response.ok;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  public async removeGameFromPlaylist(playlistId: string, gameId: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/playlists/${playlistId}/games/${gameId}`, {
+        method: 'DELETE',
+        headers: { 'userId': this.userId }
+      });
+      return response.ok;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
+  public async deletePlaylist(playlistId: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/playlists/${playlistId}`, {
+        method: 'DELETE',
+        headers: { 'userId': this.userId }
+      });
+      return response.ok;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
   public setUserId(userId: string): void {
     this.userId = userId;
   }
