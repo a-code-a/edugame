@@ -126,12 +126,15 @@ const GameViewer: React.FC = () => {
     // However, looking at VibeCoder, it doesn't set userId until save.
     // So: If id starts with 'gen-', it's local and editable. 
     // If it has a real ID, check ownership.
-    const canEdit = activeGame.id.startsWith('gen-') || isOwner;
-    const canBeSaved = activeGame.id.startsWith('gen-'); // Only save NEW games, existing ones calculate updates differently or autosave?
-    // Actually, existing games should overlap 'Save' with 'Update'?
-    // The current logic `canBeSaved = isAiGenerated` (starts with gen-) implies we only "Save" new games. 
-    // For existing games, we might want an "Update" button if modified? 
-    // For now, let's keep `canBeSaved` as is for the "Save to Database" button which creates a NEW entry usually.
+    // Allow editing if:
+    // 1. The user is the owner (creator or remixer)
+    // 2. It is a strictly LOCAL, UNSAVED game (e.g. just generated in Vibe Coder)
+    //    We check this by id starting with 'gen-' AND NOT being saved to the DB.
+    //    Public games (even if they have 'gen-' ids) will have isSavedToDB=true and fail this check unless owned.
+    const canEdit = isOwner || (activeGame.id.startsWith('gen-') && !activeGame.isSavedToDB);
+
+    // Logic for "Save" vs "Update" is handled by the button label logic later, 
+    // but `canEdit` controls the visibility of the whole edit UI (chat, details panel).
     // BUT we want to allow saving/updating changes to owned games.
     // Let's refine:
 
