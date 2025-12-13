@@ -12,6 +12,8 @@ import HomePage from '@/Components/pages/HomePage';
 import ProjectsPage from '@/Components/pages/ProjectsPage';
 
 import ExplorePage from '@/Components/pages/ExplorePage';
+import HistoryPage from '@/Components/pages/HistoryPage';
+import LikedGamesPage from '@/Components/pages/LikedGamesPage';
 import Login from '@/Components/auth/Login';
 import Signup from '@/Components/auth/Signup';
 import DatabaseService from './Services/DatabaseService';
@@ -33,7 +35,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { settings, updateSettings } = useSettings();
   const { activeGame } = useGame();
   const { user } = useAuth();
@@ -52,20 +54,23 @@ function AppContent() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#f5f3ff] via-[#f6f9ff] to-[#fef6ff] flex text-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-[#f5f3ff] via-[#f6f9ff] to-[#fef6ff] flex flex-col text-slate-900">
       {user && (
-        <Sidebar
-          isMobileOpen={isSidebarOpen}
-          onCloseMobile={() => setIsSidebarOpen(false)}
+        <Header
+          onSettingsClick={() => setIsSettingsOpen(true)}
+          onMenuToggle={() => setIsSidebarOpen(prev => !prev)}
         />
       )}
-      <div className="flex-1 flex flex-col relative overflow-hidden">
+
+      <div className="flex flex-1 overflow-hidden relative">
         {user && (
-          <Header
-            onSettingsClick={() => setIsSettingsOpen(true)}
-            onMenuToggle={() => setIsSidebarOpen(true)}
+          <Sidebar
+            isMobileOpen={isSidebarOpen}
+            isCollapsed={!isSidebarOpen}
+            onCloseMobile={() => setIsSidebarOpen(false)}
           />
         )}
+
         <main className="relative flex-1 overflow-y-auto pb-12">
           <div className="absolute inset-x-16 top-6 h-64 bg-gradient-to-r from-purple-300/40 via-white to-sky-200/40 blur-3xl pointer-events-none" />
           <div className="relative z-10">
@@ -77,7 +82,7 @@ function AppContent() {
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <HomePage />
+                    <ExplorePage />
                   </ProtectedRoute>
                 }
               />
@@ -94,7 +99,25 @@ function AppContent() {
                 path="/explore"
                 element={
                   <ProtectedRoute>
-                    <ExplorePage />
+                    <HomePage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/history"
+                element={
+                  <ProtectedRoute>
+                    <HistoryPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/liked"
+                element={
+                  <ProtectedRoute>
+                    <LikedGamesPage />
                   </ProtectedRoute>
                 }
               />

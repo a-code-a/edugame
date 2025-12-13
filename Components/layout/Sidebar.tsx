@@ -1,29 +1,30 @@
 import React from 'react';
-import { Minigame } from '../../types';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 interface SidebarProps {
   isMobileOpen: boolean;
+  isCollapsed: boolean;
   onCloseMobile: () => void;
 }
 
-const IconButton: React.FC<React.PropsWithChildren<{ label: string; to: string }>> = ({ label, to, children }) => (
+const IconButton: React.FC<React.PropsWithChildren<{ label: string; to: string; isCollapsed: boolean }>> = ({ label, to, children, isCollapsed }) => (
   <NavLink
     to={to}
     className={({ isActive }) =>
       `flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 cursor-pointer ${isActive
         ? 'text-purple-700 bg-white shadow-md shadow-purple-100/50'
         : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-      }`
+      } ${isCollapsed ? 'justify-center' : ''}`
     }
+    title={isCollapsed ? label : undefined}
   >
     {({ isActive }) => (
       <>
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-colors ${isActive ? 'bg-purple-100 text-purple-600' : 'bg-white/70 text-slate-600'
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm transition-colors ${isActive ? 'bg-purple-100 text-purple-600' : 'bg-white/70 text-slate-600'
           }`}>
           {children}
         </div>
-        <span className="text-sm font-medium">{label}</span>
+        {!isCollapsed && <span className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">{label}</span>}
       </>
     )}
   </NavLink>
@@ -43,10 +44,15 @@ const IconProjects: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
-const IconTemplates: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+const IconHistory: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.6} stroke="currentColor" {...props}>
-    <rect x="3.75" y="4.75" width="16.5" height="14.5" rx="2.5" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M8 9h8M8 13h4" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const IconPlaylists: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.6} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
   </svg>
 );
 
@@ -56,34 +62,29 @@ const IconSparkles: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   </svg>
 );
 
-const IconPlus: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.6} stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14M5 12h14" />
-  </svg>
-);
-
 const IconClose: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.6} stroke="currentColor" {...props}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
   </svg>
 );
 
-const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile }) => {
-  const navigate = useNavigate();
-
-
-
+const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, isCollapsed, onCloseMobile }) => {
   return (
     <>
+      {/* Mobile Backdrop */}
       <div
         className={`fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
           }`}
         onClick={onCloseMobile}
         aria-hidden="true"
       />
+
+      {/* Sidebar Container */}
       <aside
-        className={`fixed lg:static z-50 inset-y-0 left-0 flex h-full w-72 flex-col bg-gradient-to-b from-white/90 via-white/80 to-white/60 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-900/80 border-r border-white/40 dark:border-slate-800/80 shadow-xl backdrop-blur-2xl transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-          }`}
+        className={`fixed lg:static z-50 inset-y-0 left-0 flex h-full flex-col bg-gradient-to-b from-white/90 via-white/80 to-white/60 dark:from-slate-900/95 dark:via-slate-900/90 dark:to-slate-900/80 border-r border-white/40 dark:border-slate-800/80 shadow-xl backdrop-blur-2xl transition-all duration-300 
+          ${isMobileOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'}
+          ${isCollapsed && !isMobileOpen ? 'lg:w-[5.5rem]' : 'lg:w-64'}
+        `}
         aria-label="Hauptnavigation"
       >
         <div className="flex items-center justify-end px-6 pt-6 pb-4">
@@ -97,21 +98,60 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile }) => {
           </button>
         </div>
 
-        <nav className="mt-6 flex-1 overflow-y-auto px-4 pb-8">
-          <p className="px-2 text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-3">
-            Navigation
-          </p>
-          <div className="space-y-1 rounded-2xl bg-white/70 dark:bg-slate-900/40 p-2 shadow-inner border border-white/60 dark:border-slate-800/60">
-            <IconButton label="Startseite" to="/">
-              <IconHome className="h-5 w-5" />
-            </IconButton>
-            <IconButton label="Projekte" to="/projects">
-              <IconProjects className="h-5 w-5" />
-            </IconButton>
-            <IconButton label="Entdecken" to="/explore">
-              <IconSparkles className="h-5 w-5" />
-            </IconButton>
+        <nav className="mt-6 flex-1 overflow-y-auto px-4 pb-8 space-y-6">
+
+          {/* Main Games Scetion */}
+          <div>
+            <div className="space-y-1">
+              <IconButton label="Startseite" to="/" isCollapsed={isCollapsed}>
+                <IconHome className="h-5 w-5" />
+              </IconButton>
+            </div>
           </div>
+
+          <div className={`border-t border-slate-200/60 my-2 ${isCollapsed ? 'mx-2' : ''}`} />
+
+          {/* Mein EduGamer Section */}
+          <div>
+            {!isCollapsed && (
+              <p className="px-2 text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-3 font-semibold">
+                Mein EduGamer
+              </p>
+            )}
+            <div className="space-y-1">
+              <IconButton label="Projekte" to="/projects" isCollapsed={isCollapsed}>
+                <IconProjects className="h-5 w-5" />
+              </IconButton>
+              <IconButton label="Playlists" to="/playlists" isCollapsed={isCollapsed}>
+                <IconPlaylists className="h-5 w-5" />
+              </IconButton>
+              <IconButton label="Verlauf" to="/history" isCollapsed={isCollapsed}>
+                <IconHistory className="h-5 w-5" />
+              </IconButton>
+              <IconButton label="Videos, die ich mag" to="/liked" isCollapsed={isCollapsed}>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.6} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.633 10.5c.806 0 1.533-.446 2.031-1.08a9.041 9.041 0 012.861-2.4c.723-.384 1.35-.956 1.653-1.715a4.498 4.498 0 00.322-1.672V3a.75.75 0 01.75-.75A2.25 2.25 0 0116.5 4.5c0 1.152-.26 2.247-.723 3.218-.266.558.107 1.282.725 1.282h3.126c1.026 0 1.945.694 2.054 1.715.045.422.068.85.068 1.285a11.95 11.95 0 01-2.649 7.521c-.388.482-.987.729-1.605.729H13.48c-.483 0-.964-.078-1.423-.23l-3.114-1.04a4.501 4.501 0 00-1.423-.23H5.904M14.25 9h2.25M5.904 18.75c.083.205.173.405.27.602.197.4-.078.898-.523.898h-.908c-.889 0-1.713-.518-1.972-1.368a12 12 0 01-.521-3.507c0-1.553.295-3.036.831-4.398C3.387 10.203 4.167 9.75 5 9.75h1.053c.472 0 .745.556.5.96a8.958 8.958 0 00-1.302 4.665c0 1.194.232 2.333.654 3.375z" />
+                </svg>
+              </IconButton>
+            </div>
+          </div>
+
+          <div className={`border-t border-slate-200/60 my-2 ${isCollapsed ? 'mx-2' : ''}`} />
+
+          {/* Entdecken Section */}
+          <div>
+            {!isCollapsed && (
+              <p className="px-2 text-xs uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-3 font-semibold">
+                Studio
+              </p>
+            )}
+            <div className="space-y-1">
+              <IconButton label="Erstellen" to="/explore" isCollapsed={isCollapsed}>
+                <IconSparkles className="h-5 w-5" />
+              </IconButton>
+            </div>
+          </div>
+
         </nav>
       </aside>
     </>

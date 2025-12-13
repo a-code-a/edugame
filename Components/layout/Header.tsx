@@ -46,38 +46,56 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick, onMenuToggle }) => {
   return (
     <header className="sticky top-0 z-50">
       <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-white/80 via-[#ede9ff]/70 to-white/80 backdrop-blur-xl border-b border-white/60 shadow-[0_10px_60px_-30px_rgba(85,65,165,0.6)]" />
-      <div className="relative mx-auto flex max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-10 py-3">
-        <div className="flex items-center gap-3">
+      <div className="relative mx-auto flex w-full items-center justify-between px-4 sm:px-6 lg:px-6 py-3">
+        <div className="flex items-center gap-4">
           {onMenuToggle && (
             <button
               type="button"
               onClick={onMenuToggle}
               aria-label="Navigation öffnen"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white shadow-lg shadow-slate-400/15 text-slate-600 hover:text-slate-900 transition-colors lg:hidden"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-black/5 transition-colors text-slate-700"
             >
-              <MenuIcon className="h-5 w-5" />
+              <MenuIcon className="h-6 w-6" />
             </button>
           )}
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-semibold text-lg shadow-lg shadow-indigo-300/40">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 text-white font-bold text-xl shadow-md">
               E
             </div>
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-slate-500">EduGame</p>
-              <h1 className="text-lg font-bold text-slate-900">Creator-Arbeitsbereich</h1>
+            <div className="hidden sm:block">
+              <span className="text-xl font-bold tracking-tight text-slate-900 relative">
+                Edu
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Game</span>
+                <span className="absolute -top-1 -right-2 text-[0.5rem] font-bold text-slate-500">DE</span>
+              </span>
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+
+        {/* Search bar placeholder could go here similar to YouTube */}
+
+        <div className="flex items-center gap-2 sm:gap-4">
+
+          {/* Add Game Button */}
+          <button
+            onClick={() => navigate('/explore')} // Assuming /explore is the Studio/Create page now
+            className="hidden sm:flex items-center gap-2 h-9 px-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-900 font-medium text-sm transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span>Erstellen</span>
+          </button>
+
           {onSettingsClick && (
             <button
               onClick={onSettingsClick}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-2xl bg-white border border-white/70 text-slate-500 hover:text-purple-600 shadow-lg shadow-slate-300/30 transition-colors"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-black/5 text-slate-700 transition-colors"
               aria-label="Einstellungen"
             >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </button>
           )}
@@ -85,27 +103,25 @@ const Header: React.FC<HeaderProps> = ({ onSettingsClick, onMenuToggle }) => {
           <div className="relative">
             <button
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-              className="hidden sm:flex items-center gap-3 rounded-full bg-white/80 border border-white/70 px-3 py-1 shadow-sm hover:bg-white transition-colors"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-600 to-purple-700 text-white font-medium text-sm shadow-sm hover:ring-2 hover:ring-offset-2 hover:ring-indigo-500 transition-all"
             >
-              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 text-white font-semibold flex items-center justify-center">
-                {getUserInitials()}
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-semibold text-slate-700">{getUserName()}</p>
-                <p className="text-xs text-slate-400">Creator</p>
-              </div>
-              <svg className={`h-4 w-4 text-slate-400 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+              {getUserInitials()}
             </button>
 
             {isProfileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-50">
+                <div className="px-4 py-3 border-b border-slate-100 mb-2">
+                  <p className="text-sm font-semibold text-slate-800">{getUserName()}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Creator</p>
+                </div>
                 <button
                   onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                  className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-2"
                 >
-                  Sign out
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+                  </svg>
+                  Abmelden
                 </button>
               </div>
             )}

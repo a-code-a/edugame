@@ -84,6 +84,40 @@ class DatabaseService {
     }
   }
 
+  public async getHistory(): Promise<Minigame[]> {
+    if (!this.userId) return [];
+    try {
+      const response = await fetch(`${API_BASE_URL}/games/history`, {
+        method: 'GET',
+        headers: {
+          'userId': this.userId,
+        },
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching history:', error);
+      return [];
+    }
+  }
+
+  public async getLikedGames(): Promise<Minigame[]> {
+    if (!this.userId) return [];
+    try {
+      const response = await fetch(`${API_BASE_URL}/games/liked`, {
+        method: 'GET',
+        headers: {
+          'userId': this.userId,
+        },
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching liked games:', error);
+      return [];
+    }
+  }
+
   public async updateGame(gameId: string, updates: Partial<Omit<Minigame, 'id'>>): Promise<SaveGameResponse> {
     try {
       const response = await fetch(`${API_BASE_URL}/games/${gameId}`, {

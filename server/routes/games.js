@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Game = require('../models/Game');
+const PlayHistory = require('../models/PlayHistory');
 
 // POST /api/games - Save a new game or update existing one
 router.post('/', async (req, res) => {
@@ -126,7 +127,68 @@ router.get('/spotlight', async (req, res) => {
   }
 });
 
-// GET /api/games - Get all games for a user
+// GET /api/games/history - Get played games history for a user
+router.get('/history', async (req, res) => {
+  try {
+    const userId = req.headers.userid || req.query.userId;
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Get history sorted by playedAt desc
+    const history = await PlayHistory.find({ userId })
+      .sort({ playedAt: -1 })
+      .limit(50); // Limit to last 50 games
+
+    // Extract game IDs
+    const gameIds = [...new Set(history.map(h => h.gameId))]; // deduplicate
+
+    // Fetch games
+    // We want to preserve order of history? 
+    // Mongoose find($in) doesn't strictly preserve order. 
+    // We'll fetch all and map them back.
+    const games = await Game.find({ id: { $in: gameIds } });
+
+    // Map games to history entries to preserve recent order and filter out deleted games
+    // Also remove duplicates manually if we want unique *recent* games list
+    const uniqueGames = [];
+    const seenIds = new Set();
+
+    // Iterate history to find corresponding games
+    for (const h of history) {
+      if (!seenIds.has(h.gameId)) {
+        const game = games.find(g => g.id === h.gameId);
+        if (game) {
+          uniqueGames.push(game);
+          seenIds.add(h.gameId);
+        }
+      }
+    }
+
+    res.json(uniqueGames);
+  } catch (error) {
+    console.error('Error fetching history:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/games/liked - Get games liked by user
+router.get('/liked', async (req, res) => {
+  try {
+    const userId = req.headers.userid || req.query.userId;
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const games = await Game.find({ likedBy: userId }).sort({ createdAt: -1 });
+    res.json(games);
+  } catch (error) {
+    console.error('Error fetching liked games:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/games - Get all games for a user (My Projects)
 router.get('/', async (req, res) => {
   try {
     const userId = req.headers.userid || req.query.userId;
@@ -245,6 +307,7 @@ router.post('/:id/share', async (req, res) => {
 router.post('/:id/play', async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.headers.userid; // Get from header if available
     console.log(`Incrementing play count for game: ${id}`);
 
     const game = await Game.findOneAndUpdate(
@@ -255,6 +318,22 @@ router.post('/:id/play', async (req, res) => {
 
     if (!game) {
       return res.status(404).json({ error: 'Game not found' });
+    }
+
+    // Record History if user is logged in
+    if (userId) {
+      try {
+        // Update existing history entry for today or create new?
+        // Simple approach: just create new entry. we sort by date anyway.
+        await PlayHistory.create({
+          userId,
+          gameId: id,
+          playedAt: new Date()
+        });
+      } catch (histError) {
+        console.error('Failed to record play history:', histError);
+        // Don't fail the request if history recording fails
+      }
     }
 
     res.json(game);
