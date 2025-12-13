@@ -5,7 +5,7 @@ export class SettingsService {
 
   static getDefaultSettings(): Settings {
     return {
-      mainPrompt: `Erstelle ein HTML-Lernspiel für Kinder.
+      mainPrompt: `Erstelle ein HTML-Lernspiel.
 
 TECHNISCH:
 - Eine HTML-Datei (CSS in <style>, JS in <script>)
@@ -17,7 +17,6 @@ AUSGABE: Nur HTML-Code, beginne mit <!DOCTYPE html>`,
       refinementPrompt: `Verbessere das HTML-Spiel gemäß der Anfrage.
 
 REGELN:
-- Erhalte bestehende Funktionen
 - Einzeldatei-Struktur beibehalten
 
 AUSGABE: Nur HTML-Code, beginne mit <!DOCTYPE html>`,

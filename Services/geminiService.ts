@@ -9,12 +9,12 @@ if (!API_KEY) {
 
 const ai = new GoogleGenAI({ apiKey: API_KEY, apiVersion: "v1alpha" });
 
-const GAME_GENERATION_PROMPT = `Erstelle ein HTML-Lernspiel für Kinder.
+const GAME_GENERATION_PROMPT = `Erstelle ein HTML-Lernspiel.
 
 TECHNISCH:
 - Eine HTML-Datei (CSS in <style>, JS in <script>)
 - Keine externen Ressourcen
-- Responsive, Touch-freundlich
+- Responsive
 
 SPIEL:
 - Startbildschirm mit Anleitung
@@ -26,7 +26,6 @@ AUSGABE: Nur HTML-Code, beginne mit <!DOCTYPE html>`;
 const REFINEMENT_PROMPT = `Verbessere das HTML-Spiel gemäß der Anfrage.
 
 REGELN:
-- Erhalte bestehende Funktionen
 - Einzeldatei-Struktur beibehalten
 
 AUSGABE: Nur HTML-Code, beginne mit <!DOCTYPE html>`;
