@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { Minigame } from '../../types';
-import GameChat, { ChatMessage } from './GameChat';
+import GameChat, { ChatMessage, AttachedFile } from './GameChat';
 import { refineMinigameCode } from '../../Services/geminiService';
 import DatabaseService from '../../Services/DatabaseService';
 import { GRADES, SUBJECTS } from '../../constants';
@@ -98,13 +98,20 @@ const GameViewer: React.FC = () => {
         setCurrentGame(activeGame);
     }, [activeGame]);
 
-    const handleSendMessage = useCallback(async (message: string) => {
-        const newMessages: ChatMessage[] = [...messages, { sender: 'user', text: message }];
+    const handleSendMessage = useCallback(async (message: string, files: AttachedFile[]) => {
+        // Optimistic UI update: Show user message (files are not shown in chat bubble yet, sticking to text logic for now or we could add file indicators)
+        const fileNames = files.map(f => `[Datei: ${f.name}]`).join(', ');
+        const displayMessage = message + (fileNames ? `\n${fileNames}` : '');
+
+        const newMessages: ChatMessage[] = [...messages, { sender: 'user', text: displayMessage }];
         setMessages(newMessages);
         setIsGenerating(true);
 
         try {
-            const newHtmlContent = await refineMinigameCode(message, currentGame.htmlContent, settings);
+            // Pass files to service using the correct FilePart structure
+            const fileParts = files.map(f => ({ mimeType: f.mimeType, data: f.data }));
+            const newHtmlContent = await refineMinigameCode(message, currentGame.htmlContent, settings, fileParts);
+
             const updatedGame = { ...currentGame, htmlContent: newHtmlContent };
             setCurrentGame(updatedGame);
             updateGame(activeGame.id, newHtmlContent);

@@ -119,7 +119,7 @@ Erstelle jetzt das Spiel. Beginne direkt mit <!DOCTYPE html>`;
     }
 }
 
-export async function refineMinigameCode(prompt: string, existingHtml: string, customSettings?: Settings, mode: GenerationMode = 'fast'): Promise<string> {
+export async function refineMinigameCode(prompt: string, existingHtml: string, customSettings?: Settings, files?: FilePart[], mode: GenerationMode = 'fast'): Promise<string> {
     try {
         let refinementInstruction = REFINEMENT_PROMPT;
 
@@ -130,7 +130,6 @@ export async function refineMinigameCode(prompt: string, existingHtml: string, c
             }
         }
 
-        // Send existing HTML as plain text, not in markdown blocks
         const fullPrompt = `${refinementInstruction}
 
 ---
@@ -144,9 +143,41 @@ ${prompt}
 
 Gib jetzt den vollständigen aktualisierten HTML-Code zurück. Beginne direkt mit <!DOCTYPE html>`;
 
+        const parts: any[] = [{ text: fullPrompt }];
+
+        if (files && files.length > 0) {
+            files.forEach(file => {
+                let mediaResolution = "media_resolution_low";
+
+                if (file.mimeType.startsWith("image/")) {
+                    mediaResolution = "media_resolution_high";
+                } else if (
+                    file.mimeType === "application/pdf" ||
+                    file.mimeType.includes("word") ||
+                    file.mimeType.includes("excel") ||
+                    file.mimeType.includes("powerpoint") ||
+                    file.mimeType.includes("spreadsheet") ||
+                    file.mimeType.includes("presentation") ||
+                    file.mimeType.includes("document")
+                ) {
+                    mediaResolution = "media_resolution_medium";
+                }
+
+                parts.push({
+                    inlineData: {
+                        mimeType: file.mimeType,
+                        data: file.data
+                    },
+                    mediaResolution: {
+                        level: mediaResolution
+                    }
+                });
+            });
+        }
+
         const response = await ai.models.generateContent({
             model: MODEL_NAME,
-            contents: fullPrompt,
+            contents: [{ parts: parts }],
             config: {
                 thinkingConfig: {
                     thinkingLevel: THINKING_LEVEL_MAP[mode]
