@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Minigame } from '../../types';
 import GameChat, { ChatMessage, AttachedFile } from './GameChat';
 import { refineMinigameCode } from '../../Services/geminiService';
@@ -229,6 +230,10 @@ const GameViewer: React.FC = () => {
             {!isFullscreen && <div className="absolute inset-0 bg-gray-900/70 backdrop-blur-sm" onClick={closeViewer}></div>}
 
             <div className={`relative flex flex-col bg-white dark:bg-gray-800 shadow-2xl transition-all duration-300 ${isFullscreen ? 'w-full h-full rounded-none' : 'w-full max-w-[95vw] h-[95vh] rounded-2xl'} ${isShowing ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+                <Helmet>
+                    <title>{currentGame.title} - EduGame</title>
+                    <meta name="description" content={currentGame.description} />
+                </Helmet>
                 {/* Header - hidden in fullscreen */}
                 {!isFullscreen && (
                     <div className="flex items-center gap-4 p-4 border-b border-slate-200 dark:border-slate-700 rounded-t-2xl flex-shrink-0">

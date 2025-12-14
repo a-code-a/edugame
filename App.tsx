@@ -18,6 +18,8 @@ import PlaylistDetailPage from '@/Components/pages/PlaylistDetailPage';
 import Login from '@/Components/auth/Login';
 import Signup from '@/Components/auth/Signup';
 import DatabaseService from './Services/DatabaseService';
+import ImprintPage from '@/Components/pages/ImprintPage';
+import PrivacyPage from '@/Components/pages/PrivacyPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -135,6 +137,9 @@ function AppContent() {
                   </ProtectedRoute>
                 }
               />
+
+              <Route path="/impressum" element={<ImprintPage />} />
+              <Route path="/datenschutz" element={<PrivacyPage />} />
 
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

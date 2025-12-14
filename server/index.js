@@ -4,13 +4,41 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const gamesRoutes = require('./routes/games');
 const playlistRoutes = require('./routes/playlists');
-const https = require('https');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const admin = require('firebase-admin');
+const serviceAccount = require('./service-account-key.json');
+
+// Initialize Firebase Admin
+try {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+  });
+  console.log('Firebase Admin Initialized');
+} catch (error) {
+  console.error('Firebase Admin Initialization Error:', error);
+}
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Security Middleware
+app.use(helmet());
+
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests, please try again later.' }
+});
+
+// Apply rate limiter to all api routes
+app.use('/api/', limiter);
 
 // Middleware - CORS configuration for dev and production
 const allowedOrigins = [
@@ -28,15 +56,14 @@ app.use(cors({
     if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
-      // For debugging/fixing production issues, we'll log but allow it for now
-      // In a strict production environment, you should uncomment the error callback
-      console.log('Origin not in allowed list, but allowing for now:', origin);
-      callback(null, true);
+      console.log('Origin not in allowed list:', origin);
+      // In strict production, uncomment next line:
       // callback(new Error('Not allowed by CORS'));
+      callback(null, true);
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'userId', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'userid'], // Added Authorization
   credentials: true
 }));
 app.use(express.json());

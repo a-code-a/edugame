@@ -1,4 +1,5 @@
 import { Minigame } from '../types';
+import { auth } from '../firebase';
 
 // Use environment variable in production, localhost in development
 const API_BASE_URL = import.meta.env.VITE_API_URL
@@ -26,14 +27,25 @@ class DatabaseService {
     return DatabaseService.instance;
   }
 
+  private async getAuthHeaders(): Promise<HeadersInit> {
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (auth.currentUser) {
+      const token = await auth.currentUser.getIdToken();
+      headers['Authorization'] = `Bearer ${token}`;
+      headers['userId'] = auth.currentUser.uid; // Keep strictly for legacy, backend should prefer token
+    }
+
+    return headers;
+  }
+
   public async saveGame(game: Minigame): Promise<SaveGameResponse> {
     try {
       const response = await fetch(`${API_BASE_URL}/games`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'userId': this.userId,
-        },
+        headers: await this.getAuthHeaders(),
         body: JSON.stringify({
           ...game,
           userId: this.userId,
@@ -68,9 +80,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/games?userId=${this.userId}`, {
         method: 'GET',
-        headers: {
-          'userId': this.userId,
-        },
+        headers: await this.getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -89,9 +99,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/games/history`, {
         method: 'GET',
-        headers: {
-          'userId': this.userId,
-        },
+        headers: await this.getAuthHeaders(),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
@@ -107,9 +115,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/games/liked`, {
         method: 'GET',
-        headers: {
-          'userId': this.userId,
-        },
+        headers: await this.getAuthHeaders(),
       });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
@@ -124,10 +130,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/games/${gameId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'userId': this.userId,
-        },
+        headers: await this.getAuthHeaders(),
         body: JSON.stringify(updates),
       });
 
@@ -155,9 +158,7 @@ class DatabaseService {
       console.log(`Attempting to delete game ${gameId} from ${API_BASE_URL}/games/${gameId}`);
       const response = await fetch(`${API_BASE_URL}/games/${gameId}`, {
         method: 'DELETE',
-        headers: {
-          'userId': this.userId,
-        },
+        headers: await this.getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -181,9 +182,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/games/${gameId}/play`, {
         method: 'POST',
-        headers: {
-          'userId': this.userId,
-        },
+        headers: await this.getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -204,9 +203,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/games/${gameId}/like`, {
         method: 'POST',
-        headers: {
-          'userId': this.userId,
-        },
+        headers: await this.getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -227,9 +224,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/games/${gameId}/dislike`, {
         method: 'POST',
-        headers: {
-          'userId': this.userId,
-        },
+        headers: await this.getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -250,10 +245,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/games/${gameId}/fork`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'userId': this.userId,
-        },
+        headers: await this.getAuthHeaders(),
         body: JSON.stringify({
           creatorName: creatorName || 'Anonymous'
         }),
@@ -316,10 +308,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/games/${gameId}/share`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'userId': this.userId,
-        },
+        headers: await this.getAuthHeaders(),
         body: JSON.stringify({ isPublic }),
       });
 
@@ -342,7 +331,7 @@ class DatabaseService {
     if (!this.userId) return [];
     try {
       const response = await fetch(`${API_BASE_URL}/playlists`, {
-        headers: { 'userId': this.userId }
+        headers: await this.getAuthHeaders()
       });
       if (!response.ok) throw new Error('Failed to fetch playlists');
       return await response.json();
@@ -356,10 +345,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/playlists`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'userId': this.userId
-        },
+        headers: await this.getAuthHeaders(),
         body: JSON.stringify({ title, description, isPublic })
       });
       if (!response.ok) throw new Error('Failed to create playlist');
@@ -373,7 +359,7 @@ class DatabaseService {
   public async getPlaylist(id: string): Promise<any> {
     try {
       const response = await fetch(`${API_BASE_URL}/playlists/${id}`, {
-        headers: { 'userId': this.userId }
+        headers: await this.getAuthHeaders()
       });
       if (!response.ok) throw new Error('Failed to fetch playlist');
       return await response.json();
@@ -387,10 +373,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/playlists/${playlistId}/games`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'userId': this.userId
-        },
+        headers: await this.getAuthHeaders(),
         body: JSON.stringify({ gameId })
       });
       return response.ok;
@@ -404,7 +387,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/playlists/${playlistId}/games/${gameId}`, {
         method: 'DELETE',
-        headers: { 'userId': this.userId }
+        headers: await this.getAuthHeaders()
       });
       return response.ok;
     } catch (error) {
@@ -417,7 +400,7 @@ class DatabaseService {
     try {
       const response = await fetch(`${API_BASE_URL}/playlists/${playlistId}`, {
         method: 'DELETE',
-        headers: { 'userId': this.userId }
+        headers: await this.getAuthHeaders()
       });
       return response.ok;
     } catch (error) {

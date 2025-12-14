@@ -2,20 +2,27 @@ const express = require('express');
 const router = express.Router();
 const Game = require('../models/Game');
 const PlayHistory = require('../models/PlayHistory');
+const { verifyToken, optionalAuth } = require('../middleware/auth');
+
+// Helper to escape regex special characters
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
 
 // POST /api/games - Save a new game or update existing one
-router.post('/', async (req, res) => {
+router.post('/', verifyToken, async (req, res) => {
   try {
-    const { id, title, description, grade, subject, htmlContent, userId, isPublic, creatorName } = req.body;
+    const { id, title, description, grade, subject, htmlContent, isPublic, creatorName } = req.body;
+    const userId = req.user.uid; // Secure backend-derived user ID
 
     // Validate required fields
-    if (!id || !title || !description || !grade || !subject || !htmlContent || !userId) {
+    if (!id || !title || !description || !grade || !subject || !htmlContent) {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
     // Use findOneAndUpdate with upsert to either update or create
     const game = await Game.findOneAndUpdate(
-      { id, userId }, // Find criteria
+      { id, userId }, // Find criteria (must match user ID)
       {
         id,
         title,
@@ -64,7 +71,8 @@ router.get('/explore', async (req, res) => {
 
     // Text search (title and description)
     if (req.query.search && req.query.search.trim()) {
-      const searchRegex = new RegExp(req.query.search.trim(), 'i');
+      const safeSearch = escapeRegExp(req.query.search.trim());
+      const searchRegex = new RegExp(safeSearch, 'i');
       filter.$or = [
         { title: searchRegex },
         { description: searchRegex }
@@ -189,14 +197,10 @@ router.get('/', async (req, res) => {
 });
 
 // DELETE /api/games/:id - Delete a specific game
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers.userid || req.query.userId;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
+    const userId = req.user.uid; // Secure backend-derived user ID
 
     const game = await Game.findOneAndDelete({ id, userId });
 
@@ -211,15 +215,11 @@ router.delete('/:id', async (req, res) => {
 });
 
 // PUT /api/games/:id - Update a game
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers.userid || req.query.userId;
+    const userId = req.user.uid; // Secure backend-derived user ID
     const { title, description, grade, subject, htmlContent, isPublic, creatorName } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
 
     const updateData = {
       title,
@@ -256,15 +256,11 @@ router.put('/:id', async (req, res) => {
 });
 
 // POST /api/games/:id/share - Toggle public status
-router.post('/:id/share', async (req, res) => {
+router.post('/:id/share', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers.userid || req.query.userId;
+    const userId = req.user.uid;
     const { isPublic } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
 
     if (isPublic === undefined) {
       return res.status(400).json({ error: 'isPublic status is required' });
@@ -328,14 +324,10 @@ router.post('/:id/play', async (req, res) => {
 });
 
 // POST /api/games/:id/like - Toggle like for a user
-router.post('/:id/like', async (req, res) => {
+router.post('/:id/like', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers.userid || req.query.userId;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
+    const userId = req.user.uid;
 
     const game = await Game.findOne({ id });
 
@@ -387,14 +379,10 @@ router.post('/:id/like', async (req, res) => {
 });
 
 // POST /api/games/:id/dislike - Toggle dislike for a user
-router.post('/:id/dislike', async (req, res) => {
+router.post('/:id/dislike', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers.userid || req.query.userId;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
+    const userId = req.user.uid;
 
     const game = await Game.findOne({ id });
 
@@ -446,14 +434,10 @@ router.post('/:id/dislike', async (req, res) => {
 });
 
 // POST /api/games/:id/fork - Fork a game
-router.post('/:id/fork', async (req, res) => {
+router.post('/:id/fork', verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers.userid || req.query.userId;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
+    const userId = req.user.uid;
 
     // Find the original game
     const originalGame = await Game.findOne({ id });

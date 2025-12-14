@@ -4,6 +4,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Helper files
+package-lock.json
+
+# Firebase Service Account
+service-account-key.json
+server/service-account-key.json
+
 # Environment variables - NEVER commit these files!
 .env
 .env.local
