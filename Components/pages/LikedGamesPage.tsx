@@ -22,7 +22,7 @@ const LikedGamesPage: React.FC = () => {
 
     return (
         <div className="px-4 sm:px-8 lg:px-16 py-8 max-w-[1600px] mx-auto min-h-screen">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Videos, die ich mag</h1>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Spiele, die ich mag</h1>
             <p className="text-slate-600 mb-8">Spiele, die du mit "Gefällt mir" markiert hast.</p>
 
             {loading ? (
