@@ -1,10 +1,8 @@
 import React from 'react';
-import Header from '../layout/Header';
 
 const ImprintPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            <Header />
             <main className="flex-1 container mx-auto px-4 py-8 max-w-3xl">
                 <div className="bg-white rounded-xl shadow-sm p-8">
                     <h1 className="text-3xl font-bold text-gray-900 mb-6">Impressum</h1>

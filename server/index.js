@@ -6,6 +6,8 @@ const gamesRoutes = require('./routes/games');
 const playlistRoutes = require('./routes/playlists');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
+const morgan = require('morgan');
 const admin = require('firebase-admin');
 const serviceAccount = require('./service-account-key.json');
 
@@ -27,6 +29,14 @@ const PORT = process.env.PORT || 5000;
 
 // Security Middleware
 app.use(helmet());
+app.use(compression());
+
+// Logging
+if (process.env.NODE_ENV === 'production') {
+  app.use(morgan('combined'));
+} else {
+  app.use(morgan('dev'));
+}
 
 // Rate Limiting
 const limiter = rateLimit({

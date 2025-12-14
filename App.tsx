@@ -5,6 +5,7 @@ import { GameProvider, useGame } from './Context/GameContext';
 import { AuthProvider, useAuth } from './Context/AuthContext';
 import Header from '@/Components/layout/Header';
 import Sidebar from '@/Components/layout/Sidebar';
+import Footer from '@/Components/layout/Footer';
 import GameViewer from '@/Components/gameplay/GameViewer';
 
 import HomePage from '@/Components/pages/HomePage';
@@ -144,6 +145,7 @@ function AppContent() {
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
+          <Footer />
         </main>
         {activeGame && <GameViewer />}
 
