@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useMemo, useEffect } from '
 import { Minigame } from '../types';
 import { INITIAL_MINIGAMES } from '../constants';
 import DatabaseService from '../Services/DatabaseService';
+import { useAuth } from './AuthContext';
 
 interface GameContextType {
     minigames: Minigame[];
@@ -136,8 +137,18 @@ export const GameProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         });
     };
 
+    const { user } = useAuth();
+
     useEffect(() => {
         const loadSavedGames = async () => {
+            if (!user) {
+                setMinigames(INITIAL_MINIGAMES);
+                return;
+            }
+
+            // Ensure database service has correct user ID before fetching
+            databaseService.setUserId(user.uid);
+
             try {
                 const savedGames = await databaseService.getSavedGames();
                 setMinigames((prevGames) => {
@@ -161,7 +172,7 @@ export const GameProvider: React.FC<React.PropsWithChildren<{}>> = ({ children }
         };
 
         loadSavedGames();
-    }, []);
+    }, [user]);
 
     return (
         <GameContext.Provider
