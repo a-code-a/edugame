@@ -4,7 +4,7 @@ import GameChat, { ChatMessage, AttachedFile } from './GameChat';
 import { refineMinigameCode } from '../../Services/geminiService';
 import DatabaseService from '../../Services/DatabaseService';
 import { GRADES, SUBJECTS, SUBJECT_DISPLAY_OPTIONS } from '../../constants';
-import { useSettings } from '../../Context/SettingsContext';
+
 import { useGame } from '../../Context/GameContext';
 import { useAuth } from '../../Context/AuthContext';
 
@@ -33,7 +33,7 @@ const GameViewer: React.FC = () => {
     const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [saveError, setSaveError] = useState<string | null>(null);
     const [showEditPanel, setShowEditPanel] = useState(false);
-    const { settings } = useSettings();
+
     const databaseService = DatabaseService.getInstance();
 
     // Playlist logic
@@ -108,7 +108,7 @@ const GameViewer: React.FC = () => {
         try {
             // Pass files to service using the correct FilePart structure
             const fileParts = files.map(f => ({ mimeType: f.mimeType, data: f.data }));
-            const newHtmlContent = await refineMinigameCode(message, currentGame.htmlContent, settings, fileParts);
+            const newHtmlContent = await refineMinigameCode(message, currentGame.htmlContent, fileParts);
 
             const updatedGame = { ...currentGame, htmlContent: newHtmlContent };
             setCurrentGame(updatedGame);
@@ -124,7 +124,7 @@ const GameViewer: React.FC = () => {
         } finally {
             setIsGenerating(false);
         }
-    }, [messages, currentGame, updateGame, activeGame.id, settings]);
+    }, [messages, currentGame, updateGame, activeGame.id]);
 
     const isOwner = user && activeGame.userId === user.uid;
     // Allow editing if it's an AI generated game AND the user is the owner

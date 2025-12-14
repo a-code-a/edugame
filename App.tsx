@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Settings } from './types';
-import { SettingsProvider, useSettings } from './Context/SettingsContext';
+
 import { GameProvider, useGame } from './Context/GameContext';
 import { AuthProvider, useAuth } from './Context/AuthContext';
 import Header from '@/Components/layout/Header';
 import Sidebar from '@/Components/layout/Sidebar';
 import GameViewer from '@/Components/gameplay/GameViewer';
-import SettingsPanel from '@/Components/settings/SettingsPanel';
+
 import HomePage from '@/Components/pages/HomePage';
 import ProjectsPage from '@/Components/pages/ProjectsPage';
 
@@ -36,9 +35,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppContent() {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const { settings, updateSettings } = useSettings();
   const { activeGame } = useGame();
   const { user } = useAuth();
 
@@ -49,9 +46,7 @@ function AppContent() {
     }
   }, [user]);
 
-  const handleSettingsChange = (newSettings: Settings) => {
-    updateSettings(newSettings);
-  };
+
 
 
 
@@ -59,7 +54,6 @@ function AppContent() {
     <div className="h-screen overflow-hidden bg-gradient-to-br from-[#f5f3ff] via-[#f6f9ff] to-[#fef6ff] flex flex-col text-slate-900">
       {user && (
         <Header
-          onSettingsClick={() => setIsSettingsOpen(true)}
           onMenuToggle={() => setIsSidebarOpen(prev => !prev)}
         />
       )}
@@ -147,12 +141,7 @@ function AppContent() {
           </div>
         </main>
         {activeGame && <GameViewer />}
-        <SettingsPanel
-          isOpen={isSettingsOpen}
-          onClose={() => setIsSettingsOpen(false)}
-          settings={settings}
-          onSettingsChange={handleSettingsChange}
-        />
+
       </div>
     </div>
   );
@@ -162,11 +151,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <SettingsProvider>
-          <GameProvider>
-            <AppContent />
-          </GameProvider>
-        </SettingsProvider>
+        <GameProvider>
+          <AppContent />
+        </GameProvider>
       </AuthProvider>
     </BrowserRouter>
   );

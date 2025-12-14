@@ -32,15 +32,4 @@ export interface Playlist {
   gameCount?: number; // enriched field
 }
 
-export interface Settings {
-  mainPrompt: string;
-  refinementPrompt: string;
-  useCustomPrompts: boolean;
-}
 
-export interface SettingsContextType {
-  settings: Settings;
-  updateSettings: (updates: Partial<Settings>) => void;
-  resetToDefaults: () => void;
-  isLoading: boolean;
-}

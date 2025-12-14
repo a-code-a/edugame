@@ -1,6 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { Settings } from '../types';
-import { SettingsService } from './SettingsService';
+
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 if (!API_KEY) {
@@ -44,17 +43,10 @@ export interface FilePart {
     data: string; // base64 encoded string
 }
 
-export async function generateMinigameCode(prompt: string, customSettings?: Settings, files?: FilePart[], mode: GenerationMode = 'fast'): Promise<string> {
+export async function generateMinigameCode(prompt: string, files?: FilePart[], mode: GenerationMode = 'fast'): Promise<string> {
     try {
-        // Use custom prompt if enabled and valid, otherwise use enhanced default
+        // Use default prompt
         let systemInstruction = GAME_GENERATION_PROMPT;
-
-        if (customSettings?.useCustomPrompts && customSettings.mainPrompt) {
-            const validation = SettingsService.validatePrompt(customSettings.mainPrompt);
-            if (validation.isValid) {
-                systemInstruction = customSettings.mainPrompt;
-            }
-        }
 
         const fullPrompt = `${systemInstruction}
 
@@ -119,16 +111,9 @@ Erstelle jetzt das Spiel. Beginne direkt mit <!DOCTYPE html>`;
     }
 }
 
-export async function refineMinigameCode(prompt: string, existingHtml: string, customSettings?: Settings, files?: FilePart[], mode: GenerationMode = 'fast'): Promise<string> {
+export async function refineMinigameCode(prompt: string, existingHtml: string, files?: FilePart[], mode: GenerationMode = 'fast'): Promise<string> {
     try {
         let refinementInstruction = REFINEMENT_PROMPT;
-
-        if (customSettings?.useCustomPrompts && customSettings.refinementPrompt) {
-            const validation = SettingsService.validatePrompt(customSettings.refinementPrompt);
-            if (validation.isValid) {
-                refinementInstruction = customSettings.refinementPrompt;
-            }
-        }
 
         const fullPrompt = `${refinementInstruction}
 

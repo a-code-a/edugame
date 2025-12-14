@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { generateMinigameCode, generateGameDescription, generateGameTitle, generateGameIdeas, GameIdea, FilePart, GenerationMode } from '../../Services/geminiService';
 import DatabaseService from '../../Services/DatabaseService';
 import { Minigame } from '../../types';
-import { useSettings } from '../../Context/SettingsContext';
+
 import { GRADES, SUBJECTS, SUBJECT_DISPLAY_OPTIONS } from '../../constants';
 
 interface VibeCoderProps {
@@ -56,7 +56,6 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { settings } = useSettings();
   const databaseService = DatabaseService.getInstance();
 
   // Inspiration panel state
@@ -165,7 +164,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
     setError(null);
     try {
       const [htmlContent, aiDescription, aiTitle] = await Promise.all([
-        generateMinigameCode(prompt, settings, attachedFiles, generationMode),
+        generateMinigameCode(prompt, attachedFiles, generationMode),
         generateGameDescription(prompt || "Spiel basierend auf hochgeladenen Dateien"),
         generateGameTitle(prompt || "Neues Spiel")
       ]);
