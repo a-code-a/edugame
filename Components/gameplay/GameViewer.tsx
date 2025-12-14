@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Minigame } from '../../types';
 import GameChat, { ChatMessage, AttachedFile } from './GameChat';
 import { refineMinigameCode } from '../../Services/geminiService';
@@ -46,7 +46,9 @@ const GameViewer: React.FC = () => {
     const [showPlaylistMenu, setShowPlaylistMenu] = useState(false);
     const [playlists, setPlaylists] = useState<any[]>([]);
     const [loadingPlaylists, setLoadingPlaylists] = useState(false);
-    const playlistMenuRef = React.useRef<HTMLDivElement>(null);
+
+    const playlistMenuRef = useRef<HTMLDivElement>(null);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -96,6 +98,8 @@ const GameViewer: React.FC = () => {
 
     useEffect(() => {
         setCurrentGame(activeGame);
+        // Focus iframe when game loads/changes
+        setTimeout(() => iframeRef.current?.focus(), 100);
     }, [activeGame]);
 
     const handleSendMessage = useCallback(async (message: string, files: AttachedFile[]) => {
@@ -115,7 +119,10 @@ const GameViewer: React.FC = () => {
             const updatedGame = { ...currentGame, htmlContent: newHtmlContent };
             setCurrentGame(updatedGame);
             updateGame(activeGame.id, newHtmlContent);
+
             setMessages([...newMessages, { sender: 'ai', text: "Ich habe das Spiel mit deinen Änderungen aktualisiert. Schau es dir an!" }]);
+            // Re-focus iframe after update
+            setTimeout(() => iframeRef.current?.focus(), 100);
         } catch (error) {
             console.error(error);
             const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
@@ -478,8 +485,9 @@ const GameViewer: React.FC = () => {
 
                 {/* Main content */}
                 <div className={`flex-grow flex flex-row overflow-hidden ${isFullscreen ? '' : 'rounded-b-2xl'}`}>
-                    <div className="flex-grow bg-white overflow-hidden relative">
+                    <div className="flex-grow bg-white overflow-y-auto relative">
                         <iframe
+                            ref={iframeRef}
                             key={currentGame.htmlContent}
                             srcDoc={currentGame.htmlContent}
                             title={activeGame.title}
