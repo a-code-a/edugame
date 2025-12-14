@@ -1,5 +1,5 @@
 import React from 'react';
-import { SUBJECTS } from '../../constants';
+import { SUBJECTS, SUBJECT_DISPLAY_OPTIONS } from '../../constants';
 
 interface ExploreFiltersProps {
     search: string;
@@ -30,11 +30,11 @@ const GRADE_OPTIONS = [
 
 const SUBJECT_OPTIONS = [
     { value: 'All', label: 'Alle', icon: '📚' },
-    { value: 'Math', label: 'Mathe', icon: '🔢' },
-    { value: 'Language Arts', label: 'Sprache', icon: '📖' },
-    { value: 'Science', label: 'Wissenschaft', icon: '🔬' },
-    { value: 'Social Studies', label: 'Gesellschaft', icon: '🌍' },
-    { value: 'Art', label: 'Kunst', icon: '🎨' },
+    ...SUBJECTS.map(s => ({
+        value: s,
+        label: SUBJECT_DISPLAY_OPTIONS[s]?.label || s,
+        icon: SUBJECT_DISPLAY_OPTIONS[s]?.icon || '❓'
+    }))
 ];
 
 const ExploreFilters: React.FC<ExploreFiltersProps> = ({
@@ -83,8 +83,8 @@ const ExploreFilters: React.FC<ExploreFiltersProps> = ({
                         key={option.value}
                         onClick={() => onSubjectChange(option.value)}
                         className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${subject === option.value
-                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                                : 'bg-white text-slate-600 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
+                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                            : 'bg-white text-slate-600 border border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'
                             }`}
                     >
                         <span>{option.icon}</span>

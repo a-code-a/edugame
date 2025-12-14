@@ -3,20 +3,14 @@ import { generateMinigameCode, generateGameDescription, generateGameTitle, gener
 import DatabaseService from '../../Services/DatabaseService';
 import { Minigame } from '../../types';
 import { useSettings } from '../../Context/SettingsContext';
-import { GRADES, SUBJECTS } from '../../constants';
+import { GRADES, SUBJECTS, SUBJECT_DISPLAY_OPTIONS } from '../../constants';
 
 interface VibeCoderProps {
   onGameCreated: (game: Minigame) => void;
   onGameSaved?: (game: Minigame) => void;
 }
 
-const SUBJECT_LABELS: Record<string, string> = {
-  'Math': 'Mathematik',
-  'Language Arts': 'Sprache',
-  'Science': 'Naturwissenschaften',
-  'Social Studies': 'Gesellschaft',
-  'Art': 'Kunst',
-};
+
 
 const WandIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
@@ -291,7 +285,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
                     className="px-3 py-2 rounded-lg border border-amber-200 bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
                   >
                     {SUBJECTS.map((s) => (
-                      <option key={s} value={s}>{SUBJECT_LABELS[s] || s}</option>
+                      <option key={s} value={s}>{SUBJECT_DISPLAY_OPTIONS[s]?.label || s}</option>
                     ))}
                   </select>
                   <select
@@ -429,8 +423,8 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
             <button
               onClick={() => setGenerationMode('fast')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${generationMode === 'fast'
-                  ? 'bg-white text-purple-700 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-white text-purple-700 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
                 }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
@@ -441,8 +435,8 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
             <button
               onClick={() => setGenerationMode('thinking')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${generationMode === 'thinking'
-                  ? 'bg-white text-indigo-700 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-white text-indigo-700 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
                 }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">

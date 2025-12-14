@@ -4,6 +4,7 @@ import DatabaseService from '../../Services/DatabaseService';
 import MinigameGrid from '../minigames/MinigameGrid';
 import ExploreFilters from '../explore/ExploreFilters';
 import { useGame } from '../../Context/GameContext';
+import { SUBJECT_DISPLAY_OPTIONS } from '../../constants';
 
 // Debounce hook for search
 function useDebounce<T>(value: T, delay: number): T {
@@ -95,7 +96,7 @@ export default function ExplorePage() {
                             {debouncedSearch ? (
                                 <>Suchergebnisse für "<span className="text-indigo-600">{debouncedSearch}</span>"</>
                             ) : subject !== 'All' ? (
-                                <>{SUBJECT_LABELS[subject] || subject} Spiele</>
+                                <>{SUBJECT_DISPLAY_OPTIONS[subject]?.label || subject} Spiele</>
                             ) : (
                                 'Alle Spiele'
                             )}
@@ -187,11 +188,4 @@ export default function ExplorePage() {
     );
 }
 
-// Subject label mapping
-const SUBJECT_LABELS: Record<string, string> = {
-    'Math': 'Mathe',
-    'Language Arts': 'Sprache',
-    'Science': 'Wissenschaft',
-    'Social Studies': 'Gesellschaft',
-    'Art': 'Kunst',
-};
+

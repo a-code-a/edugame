@@ -3,18 +3,12 @@ import { Minigame } from '../../types';
 import GameChat, { ChatMessage, AttachedFile } from './GameChat';
 import { refineMinigameCode } from '../../Services/geminiService';
 import DatabaseService from '../../Services/DatabaseService';
-import { GRADES, SUBJECTS } from '../../constants';
+import { GRADES, SUBJECTS, SUBJECT_DISPLAY_OPTIONS } from '../../constants';
 import { useSettings } from '../../Context/SettingsContext';
 import { useGame } from '../../Context/GameContext';
 import { useAuth } from '../../Context/AuthContext';
 
-const SUBJECT_LABELS: Record<string, { label: string; icon: string; color: string }> = {
-    'Math': { label: 'Mathe', icon: '🔢', color: 'bg-sky-100 text-sky-700' },
-    'Language Arts': { label: 'Sprache', icon: '📖', color: 'bg-rose-100 text-rose-700' },
-    'Science': { label: 'Wissenschaft', icon: '🔬', color: 'bg-emerald-100 text-emerald-700' },
-    'Social Studies': { label: 'Gesellschaft', icon: '🌍', color: 'bg-amber-100 text-amber-700' },
-    'Art': { label: 'Kunst', icon: '🎨', color: 'bg-purple-100 text-purple-700' },
-};
+const SUBJECT_LABELS = SUBJECT_DISPLAY_OPTIONS;
 
 const CloseIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>

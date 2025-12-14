@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { GRADES, SUBJECTS } from '../../constants';
+import { GRADES, SUBJECTS, SUBJECT_DISPLAY_OPTIONS } from '../../constants';
 
 interface FilterControlsProps {
   selectedGrade: string;
@@ -98,7 +98,7 @@ const FilterControls: React.FC<FilterControlsProps> = ({
 
   const subjectOptions: DropdownOption[] = [
     { label: 'Alle Fächer', value: 'All' },
-    ...SUBJECTS.map((s) => ({ label: s, value: s })),
+    ...SUBJECTS.map((s) => ({ label: SUBJECT_DISPLAY_OPTIONS[s]?.label || s, value: s })),
   ];
 
   const sortOptions: DropdownOption[] = [
