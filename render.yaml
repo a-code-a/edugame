@@ -20,6 +20,13 @@ services:
         sync: false # Set this in Render dashboard
       - key: FRONTEND_URL
         sync: false # Set this manually after frontend is deployed
+      # Firebase Admin SDK Credentials (from service account JSON)
+      - key: FIREBASE_PROJECT_ID
+        sync: false # Set this in Render dashboard
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false # Set this in Render dashboard (full key with \n characters)
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false # Set this in Render dashboard
     healthCheckPath: /api/health
 
   # Frontend Static Site
@@ -28,7 +35,7 @@ services:
     runtime: node
     region: frankfurt # Change to your preferred region
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --legacy-peer-deps && npm run build
     startCommand: npm run preview -- --host 0.0.0.0 --port $PORT
     envVars:
       - key: NODE_ENV

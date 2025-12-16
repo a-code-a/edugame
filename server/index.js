@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const https = require('https');
 const gamesRoutes = require('./routes/games');
 const playlistRoutes = require('./routes/playlists');
 const helmet = require('helmet');
@@ -9,20 +10,45 @@ const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 const morgan = require('morgan');
 const admin = require('firebase-admin');
-const serviceAccount = require('./service-account-key.json');
+
+// Load environment variables first so we can use them for Firebase
+dotenv.config();
 
 // Initialize Firebase Admin
 try {
+  // Check for environment variables (production) or fall back to local file (development)
+  let firebaseCredential;
+
+  if (process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+    // Use environment variables (Render deployment)
+    const serviceAccount = {
+      type: 'service_account',
+      project_id: process.env.FIREBASE_PROJECT_ID,
+      private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID || '',
+      private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'), // Handle escaped newlines
+      client_email: process.env.FIREBASE_CLIENT_EMAIL,
+      client_id: process.env.FIREBASE_CLIENT_ID || '',
+      auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+      token_uri: 'https://oauth2.googleapis.com/token',
+      auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+      client_x509_cert_url: `https://www.googleapis.com/robot/v1/metadata/x509/${encodeURIComponent(process.env.FIREBASE_CLIENT_EMAIL)}`
+    };
+    firebaseCredential = admin.credential.cert(serviceAccount);
+    console.log('Firebase Admin: Using environment variables');
+  } else {
+    // Fall back to local JSON file (development)
+    const serviceAccount = require('./service-account-key.json');
+    firebaseCredential = admin.credential.cert(serviceAccount);
+    console.log('Firebase Admin: Using local service account file');
+  }
+
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount)
+    credential: firebaseCredential
   });
   console.log('Firebase Admin Initialized');
 } catch (error) {
   console.error('Firebase Admin Initialization Error:', error);
 }
-
-// Load environment variables
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
