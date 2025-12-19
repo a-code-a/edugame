@@ -13,12 +13,6 @@ const GAME_GENERATION_PROMPT = `Erstelle ein HTML-Lernspiel.
 TECHNISCH:
 - Eine HTML-Datei (CSS in <style>, JS in <script>)
 - Keine externen Ressourcen
-- Responsive
-
-SPIEL:
-- Startbildschirm mit Anleitung
-- Punktestand und Feedback
-- Endbildschirm mit "Nochmal spielen"
 
 AUSGABE: Nur HTML-Code, beginne mit <!DOCTYPE html>`;
 
@@ -315,7 +309,7 @@ export async function generateGameTitle(prompt: string): Promise<string> {
 "${prompt}"
 
 Regeln:
-- Kreativ und kindgerecht
+- Kreativ
 - Kein Doppelpunkt, keine Anführungszeichen
 - NUR der Titel, nichts anderes`;
 

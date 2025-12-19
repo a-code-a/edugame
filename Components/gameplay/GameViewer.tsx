@@ -156,6 +156,18 @@ const GameViewer: React.FC = () => {
     };
 
     const handleSaveToDatabase = useCallback(async () => {
+        // Validation
+        if (!currentGame.grade || currentGame.grade === 0) {
+            setSaveError("Bitte wähle eine Klasse aus.");
+            setShowEditPanel(true);
+            return;
+        }
+        if (!currentGame.subject) {
+            setSaveError("Bitte wähle ein Fach aus.");
+            setShowEditPanel(true);
+            return;
+        }
+
         setIsSaving(true);
         setSaveError(null);
         setSaveStatus('idle');
@@ -443,10 +455,11 @@ const GameViewer: React.FC = () => {
                             <div className="flex items-center gap-2">
                                 <label className="text-sm font-medium text-slate-600 dark:text-slate-300">Klasse:</label>
                                 <select
-                                    value={currentGame.grade}
+                                    value={currentGame.grade || ''}
                                     onChange={(e) => handleDetailChange('grade', e.target.value)}
                                     className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
                                 >
+                                    <option value="" disabled>Wählen</option>
                                     {GRADES.map((grade) => (
                                         <option key={grade} value={grade}>Klasse {grade}</option>
                                     ))}
@@ -456,10 +469,11 @@ const GameViewer: React.FC = () => {
                             <div className="flex items-center gap-2">
                                 <label className="text-sm font-medium text-slate-600 dark:text-slate-300">Fach:</label>
                                 <select
-                                    value={currentGame.subject}
+                                    value={currentGame.subject || ''}
                                     onChange={(e) => handleDetailChange('subject', e.target.value)}
                                     className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400"
                                 >
+                                    <option value="" disabled>Wählen</option>
                                     {SUBJECTS.map((subject) => (
                                         <option key={subject} value={subject}>
                                             {SUBJECT_LABELS[subject]?.label || subject}

@@ -173,8 +173,8 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
         id: `gen-${Date.now()}`,
         title: aiTitle,
         description: aiDescription,
-        grade: 1,
-        subject: 'Art',
+        grade: 0,
+        subject: '',
         htmlContent,
       };
       onGameCreated(newGame);
@@ -190,6 +190,16 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
 
   const handleSaveToDatabase = async () => {
     if (!lastCreatedGame) return;
+
+    // Validation
+    if (!lastCreatedGame.grade || lastCreatedGame.grade === 0) {
+      setError("Bitte wähle eine Klasse aus.");
+      return;
+    }
+    if (!lastCreatedGame.subject) {
+      setError("Bitte wähle ein Fach aus.");
+      return;
+    }
 
     setIsSaving(true);
     setError(null);
@@ -235,6 +245,14 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
     setPrompt(idea.prompt);
     setShowInspiration(false);
     setIdeas([]);
+  };
+
+  const handleUpdateDetails = (updates: Partial<Minigame>) => {
+    if (lastCreatedGame) {
+      const updated = { ...lastCreatedGame, ...updates };
+      setLastCreatedGame(updated);
+      onGameCreated(updated); // Also update parent preview
+    }
   };
 
   return (
@@ -477,8 +495,33 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
               </div>
               <div className="flex-1">
                 <p className="text-sm font-semibold text-slate-700">Erfolgreich erstellt!</p>
-                <p className="text-xs text-slate-500">Speichere es in der Datenbank</p>
+                <p className="text-xs text-slate-500">Bitte lege Klasse und Fach fest, um zu speichern.</p>
               </div>
+            </div>
+
+            {/* Selection Fields for Saving */}
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={lastCreatedGame.grade || ''}
+                onChange={(e) => handleUpdateDetails({ grade: Number(e.target.value) })}
+                className={`px-3 py-2 rounded-lg border ${!lastCreatedGame.grade && error ? 'border-red-300 ring-1 ring-red-100' : 'border-slate-200'} bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-200`}
+              >
+                <option value="" disabled>Klasse wählen</option>
+                {GRADES.map((g) => (
+                  <option key={g} value={g}>Klasse {g}</option>
+                ))}
+              </select>
+
+              <select
+                value={lastCreatedGame.subject || ''}
+                onChange={(e) => handleUpdateDetails({ subject: e.target.value })}
+                className={`px-3 py-2 rounded-lg border ${!lastCreatedGame.subject && error ? 'border-red-300 ring-1 ring-red-100' : 'border-slate-200'} bg-white text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-200`}
+              >
+                <option value="" disabled>Fach wählen</option>
+                {SUBJECTS.map((s) => (
+                  <option key={s} value={s}>{SUBJECT_DISPLAY_OPTIONS[s]?.label || s}</option>
+                ))}
+              </select>
             </div>
 
             <button
