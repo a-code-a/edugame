@@ -6,7 +6,7 @@ if (!API_KEY) {
     throw new Error("VITE_GEMINI_API_KEY environment variable not set");
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY, apiVersion: "v1alpha" });
+const ai = new GoogleGenAI({ apiKey: API_KEY, apiVersion: "v1beta" });
 
 const GAME_GENERATION_PROMPT = `Erstelle ein HTML-Lernspiel.
 
@@ -43,11 +43,88 @@ export interface FilePart {
     data: string; // base64 encoded string
 }
 
-export async function generateMinigameCode(prompt: string, files?: FilePart[], mode: GenerationMode = 'fast'): Promise<string> {
+/**
+ * Uploads a file to the Gemini Files API.
+ */
+async function uploadFileToGemini(filePart: FilePart): Promise<{ uri: string, name: string }> {
     try {
-        // Use default prompt
-        let systemInstruction = GAME_GENERATION_PROMPT;
+        const byteCharacters = atob(filePart.data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: filePart.mimeType });
+        const numBytes = blob.size;
+        const displayName = "Attached File";
 
+        // Step 1: Initiate upload
+        const initRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'X-Goog-Upload-Protocol': 'resumable',
+                'X-Goog-Upload-Command': 'start',
+                'X-Goog-Upload-Header-Content-Length': numBytes.toString(),
+                'X-Goog-Upload-Header-Content-Type': filePart.mimeType,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ file: { displayName } })
+        });
+
+        if (!initRes.ok) throw new Error(`Failed to initiate upload: ${initRes.statusText}`);
+
+        const uploadUrlHeader = initRes.headers.get('x-goog-upload-url');
+        const uploadUrlFinal = uploadUrlHeader || await initRes.text();
+
+        // Step 2: Upload actual bytes
+        const uploadRes = await fetch(uploadUrlFinal, {
+            method: 'POST',
+            headers: {
+                'Content-Length': numBytes.toString(),
+                'X-Goog-Upload-Offset': '0',
+                'X-Goog-Upload-Command': 'upload, finalize'
+            },
+            body: blob
+        });
+
+        if (!uploadRes.ok) throw new Error(`Failed to upload file content: ${uploadRes.statusText}`);
+
+        const fileInfo = await uploadRes.json();
+        const fileUri = fileInfo.file.uri;
+        const fileName = fileInfo.file.name;
+
+        // Step 3: Wait for file to be ACTIVE
+        let state = fileInfo.file.state;
+        while (state === 'PROCESSING') {
+            await new Promise(r => setTimeout(r, 1000));
+            const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${API_KEY}`);
+            const checkData = await checkRes.json();
+            state = checkData.state;
+            if (state === 'FAILED') throw new Error("File processing failed");
+        }
+
+        return { uri: fileUri, name: fileName };
+
+    } catch (error) {
+        console.error("Error uploading file to Gemini:", error);
+        throw error;
+    }
+}
+
+async function deleteGeminiFile(name: string) {
+    try {
+        await fetch(`https://generativelanguage.googleapis.com/v1beta/${name}?key=${API_KEY}`, {
+            method: 'DELETE'
+        });
+    } catch (e) {
+        console.warn("Failed to delete temp Gemini file:", name, e);
+    }
+}
+
+export async function generateMinigameCode(prompt: string, files?: FilePart[], mode: GenerationMode = 'fast'): Promise<string> {
+    const uploadedFiles: string[] = [];
+    try {
+        let systemInstruction = GAME_GENERATION_PROMPT;
         const fullPrompt = `${systemInstruction}
 
 ---
@@ -60,20 +137,28 @@ Erstelle jetzt das Spiel. Beginne direkt mit <!DOCTYPE html>`;
         const parts: any[] = [{ text: fullPrompt }];
 
         if (files && files.length > 0) {
-            files.forEach(file => {
-                let mediaResolution = "media_resolution_low";
+            for (const file of files) {
+                const isImage = file.mimeType.startsWith("image/");
+                if (!isImage && (file.mimeType.includes("pdf") || file.mimeType.includes("application"))) {
+                    try {
+                        const { uri, name } = await uploadFileToGemini(file);
+                        uploadedFiles.push(name);
+                        parts.push({
+                            fileData: {
+                                mimeType: file.mimeType,
+                                fileUri: uri
+                            }
+                        });
+                        continue;
+                    } catch (e) {
+                        console.error("Fallback to inline due to upload error:", e);
+                    }
+                }
 
+                let mediaResolution = "media_resolution_low";
                 if (file.mimeType.startsWith("image/")) {
                     mediaResolution = "media_resolution_high";
-                } else if (
-                    file.mimeType === "application/pdf" ||
-                    file.mimeType.includes("word") ||
-                    file.mimeType.includes("excel") ||
-                    file.mimeType.includes("powerpoint") ||
-                    file.mimeType.includes("spreadsheet") ||
-                    file.mimeType.includes("presentation") ||
-                    file.mimeType.includes("document")
-                ) {
+                } else if (file.mimeType === "application/pdf") {
                     mediaResolution = "media_resolution_medium";
                 }
 
@@ -86,7 +171,7 @@ Erstelle jetzt das Spiel. Beginne direkt mit <!DOCTYPE html>`;
                         level: mediaResolution
                     }
                 });
-            });
+            }
         }
 
         const response = await ai.models.generateContent({
@@ -100,21 +185,22 @@ Erstelle jetzt das Spiel. Beginne direkt mit <!DOCTYPE html>`;
         });
 
         let html = response.text;
-
-        // Clean up any markdown formatting that might have slipped through
         html = cleanHtmlResponse(html);
-
         return html;
     } catch (error) {
         console.error("Gemini API error:", error);
         throw new Error("Fehler beim Erzeugen des Minispiels. Bitte versuche es erneut.");
+    } finally {
+        for (const name of uploadedFiles) {
+            await deleteGeminiFile(name);
+        }
     }
 }
 
 export async function refineMinigameCode(prompt: string, existingHtml: string, files?: FilePart[], mode: GenerationMode = 'fast'): Promise<string> {
+    const uploadedFiles: string[] = [];
     try {
         let refinementInstruction = REFINEMENT_PROMPT;
-
         const fullPrompt = `${refinementInstruction}
 
 ---
@@ -131,20 +217,28 @@ Gib jetzt den vollständigen aktualisierten HTML-Code zurück. Beginne direkt mi
         const parts: any[] = [{ text: fullPrompt }];
 
         if (files && files.length > 0) {
-            files.forEach(file => {
-                let mediaResolution = "media_resolution_low";
+            for (const file of files) {
+                const isImage = file.mimeType.startsWith("image/");
+                if (!isImage && (file.mimeType.includes("pdf") || file.mimeType.includes("application"))) {
+                    try {
+                        const { uri, name } = await uploadFileToGemini(file);
+                        uploadedFiles.push(name);
+                        parts.push({
+                            fileData: {
+                                mimeType: file.mimeType,
+                                fileUri: uri
+                            }
+                        });
+                        continue;
+                    } catch (e) {
+                        console.error("Fallback to inline due to upload error:", e);
+                    }
+                }
 
+                let mediaResolution = "media_resolution_low";
                 if (file.mimeType.startsWith("image/")) {
                     mediaResolution = "media_resolution_high";
-                } else if (
-                    file.mimeType === "application/pdf" ||
-                    file.mimeType.includes("word") ||
-                    file.mimeType.includes("excel") ||
-                    file.mimeType.includes("powerpoint") ||
-                    file.mimeType.includes("spreadsheet") ||
-                    file.mimeType.includes("presentation") ||
-                    file.mimeType.includes("document")
-                ) {
+                } else if (file.mimeType === "application/pdf") {
                     mediaResolution = "media_resolution_medium";
                 }
 
@@ -157,7 +251,7 @@ Gib jetzt den vollständigen aktualisierten HTML-Code zurück. Beginne direkt mi
                         level: mediaResolution
                     }
                 });
-            });
+            }
         }
 
         const response = await ai.models.generateContent({
@@ -171,14 +265,15 @@ Gib jetzt den vollständigen aktualisierten HTML-Code zurück. Beginne direkt mi
         });
 
         let html = response.text;
-
-        // Clean up any markdown formatting
         html = cleanHtmlResponse(html);
-
         return html;
     } catch (error) {
         console.error("Gemini API error:", error);
         throw new Error("Fehler beim Verfeinern des Minispiels. Bitte versuche es erneut.");
+    } finally {
+        for (const name of uploadedFiles) {
+            await deleteGeminiFile(name);
+        }
     }
 }
 
@@ -333,4 +428,3 @@ function cleanHtmlResponse(html: string): string {
 
     return html;
 }
-
