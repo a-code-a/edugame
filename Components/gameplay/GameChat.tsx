@@ -127,9 +127,19 @@ const GameChat: React.FC<GameChatProps> = ({ messages, onSendMessage, isGenerati
   };
 
   const handlePaste = async (event: React.ClipboardEvent) => {
-    if (event.clipboardData.files && event.clipboardData.files.length > 0) {
+    const items = Array.from(event.clipboardData.items) as DataTransferItem[];
+    const files: File[] = [];
+
+    for (const item of items) {
+      if (item.kind === 'file') {
+        const file = item.getAsFile();
+        if (file) files.push(file);
+      }
+    }
+
+    if (files.length > 0) {
       event.preventDefault();
-      await processFiles(Array.from(event.clipboardData.files));
+      await processFiles(files);
     }
   };
 

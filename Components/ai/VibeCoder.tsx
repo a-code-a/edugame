@@ -155,6 +155,23 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
     }
   };
 
+  const handlePaste = async (event: React.ClipboardEvent) => {
+    const items = Array.from(event.clipboardData.items) as DataTransferItem[];
+    const files: File[] = [];
+
+    for (const item of items) {
+      if (item.kind === 'file') {
+        const file = item.getAsFile();
+        if (file) files.push(file);
+      }
+    }
+
+    if (files.length > 0) {
+      event.preventDefault();
+      await processFiles(files);
+    }
+  };
+
   const handleGenerate = async () => {
     if (!prompt.trim() && attachedFiles.length === 0) {
       setError('Bitte gib eine Beschreibung ein oder lade eine Datei für dein Spiel hoch.');
@@ -384,6 +401,7 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
                     handleGenerate();
                   }
                 }}
+                onPaste={handlePaste}
                 placeholder="z. B. Ein Quiz mit drei Schwierigkeitsstufen, das Bruchteile auf einem Zahlenstrahl visualisiert."
                 className="w-full h-32 resize-none rounded-xl border border-slate-200 bg-white/80 p-4 text-sm text-slate-800 placeholder:text-slate-400 focus:border-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-200/50 transition pr-10"
                 disabled={isLoading}
@@ -412,13 +430,26 @@ const VibeCoder: React.FC<VibeCoderProps> = ({ onGameCreated, onGameSaved }) => 
             {attachedFiles.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
                 {attachedFiles.map(file => (
-                  <div key={file.id} className="flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-1.5 text-xs text-slate-700 border border-slate-200">
-                    <span className="truncate max-w-[150px]">{file.name}</span>
+                  <div key={file.id} className="relative group">
+                    {file.mimeType.startsWith('image/') ? (
+                      <div className="w-16 h-16 rounded-lg border border-slate-200 overflow-hidden relative">
+                        <img
+                          src={`data:${file.mimeType};base64,${file.data}`}
+                          alt={file.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-1.5 text-xs text-slate-700 border border-slate-200">
+                        <span className="truncate max-w-[150px]">{file.name}</span>
+                      </div>
+                    )}
                     <button
                       onClick={() => handleRemoveFile(file.id)}
-                      className="text-slate-400 hover:text-red-500 transition-colors"
+                      className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-red-500 text-white flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Entfernen"
                     >
-                      <XMarkIcon className="h-3.5 w-3.5" />
+                      <XMarkIcon className="h-3 w-3" />
                     </button>
                   </div>
                 ))}
