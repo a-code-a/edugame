@@ -44,8 +44,8 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
 
   return (
     <header className="sticky top-0 z-50">
-      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-white/80 via-[#ede9ff]/70 to-white/80 backdrop-blur-xl border-b border-white/60 shadow-[0_10px_60px_-30px_rgba(85,65,165,0.6)]" />
-      <div className="relative mx-auto flex w-full items-center justify-between px-4 sm:px-6 lg:px-6 py-3">
+      <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-r from-white/80 via-[#ede9ff]/70 to-white/80 backdrop-blur-xl border-b border-white/60 shadow-[0_10px_60px_-30px_rgba(85,65,165,0.6)]" />
+      <div className="relative mx-auto flex w-full items-center justify-between px-4 sm:px-6 lg:px-6 py-1">
         <div className="flex items-center gap-4">
           {onMenuToggle && (
             <button

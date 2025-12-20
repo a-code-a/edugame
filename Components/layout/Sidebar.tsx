@@ -87,7 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, isCollapsed, onCloseMob
         `}
         aria-label="Hauptnavigation"
       >
-        <div className="flex items-center justify-end px-6 pt-6 pb-4">
+        <div className="flex items-center justify-end px-6 pt-4 pb-2">
           <button
             type="button"
             onClick={onCloseMobile}
@@ -98,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, isCollapsed, onCloseMob
           </button>
         </div>
 
-        <nav className="mt-6 flex-1 overflow-y-auto px-4 pb-8 space-y-6">
+        <nav className="mt-2 flex-1 overflow-y-auto px-4 pb-8 space-y-4">
 
           {/* Main Games Scetion */}
           <div>
