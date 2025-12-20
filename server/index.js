@@ -80,27 +80,42 @@ app.use('/api/', limiter);
 const allowedOrigins = [
   'http://localhost:3000', // Local development
   'http://localhost:5173', // Vite default port
-  process.env.FRONTEND_URL // Production frontend URL from Render
+  process.env.FRONTEND_URL, // Production frontend URL from Render
+  'https://edugame-frontend-gt3e.onrender.com' // Explicit production URL
 ].filter(Boolean);
+
+// Log CORS configuration on startup
+console.log('CORS Configuration:');
+console.log('Allowed Origins:', allowedOrigins);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('FRONTEND_URL:', process.env.FRONTEND_URL);
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    if (!origin) {
+      console.log('CORS: Request with no origin allowed');
+      return callback(null, true);
+    }
 
     // Check if origin is allowed
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+    if (allowedOrigins.includes(origin)) {
+      console.log('CORS: Origin allowed:', origin);
+      callback(null, true);
+    } else if (process.env.NODE_ENV !== 'production') {
+      console.log('CORS: Non-production mode - allowing origin:', origin);
       callback(null, true);
     } else {
-      console.log('Origin not in allowed list:', origin);
-      // In strict production, uncomment next line:
-      // callback(new Error('Not allowed by CORS'));
-      callback(null, true);
+      console.error('CORS: Origin NOT allowed:', origin);
+      console.error('CORS: Allowed origins are:', allowedOrigins);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'userid'], // Added Authorization
-  credentials: true
+  allowedHeaders: ['Content-Type', 'Authorization', 'userid'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -161,28 +176,12 @@ app.use((req, res) => {
 const startServer = async () => {
   await connectDB();
   app.listen(PORT, () => {
+    console.log(`========================================`);
     console.log(`Server running on port ${PORT}`);
-
-    // Self-ping mechanism to keep Render free tier awake
-    // Runs every 14 minutes (render sleeps after 15m inactivity)
-    if (process.env.NODE_ENV === 'production') {
-      const pingInterval = 14 * 60 * 1000; // 14 minutes
-      console.log(`Setting up keep-alive ping every ${pingInterval / 60000} minutes`);
-
-      setInterval(() => {
-        const baseUrl = process.env.RENDER_EXTERNAL_URL || process.env.BACKEND_URL;
-        if (baseUrl) {
-          console.log(`Sending keep-alive ping to ${baseUrl}/api/health`);
-          https.get(`${baseUrl}/api/health`, (res) => {
-            console.log(`Ping status: ${res.statusCode}`);
-          }).on('error', (err) => {
-            console.error(`Ping failed: ${err.message}`);
-          });
-        } else {
-          console.log('Keep-alive skipped: No RENDER_EXTERNAL_URL defined');
-        }
-      }, pingInterval);
-    }
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+    console.log(`Health check: ${process.env.RENDER_EXTERNAL_URL || 'http://localhost:' + PORT}/api/health`);
+    console.log(`========================================`);
+    console.log(`Keep-alive: Using external GitHub Actions workflow`);
   });
 };
 
