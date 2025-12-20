@@ -92,9 +92,9 @@ const GameViewer: React.FC = () => {
 
     useEffect(() => {
         setCurrentGame(activeGame);
-        // Focus iframe when game loads/changes
+        // Focus iframe when a new game is loaded
         setTimeout(() => iframeRef.current?.focus(), 100);
-    }, [activeGame]);
+    }, [activeGame.id]);
 
     const handleSendMessage = useCallback(async (message: string, files: AttachedFile[]) => {
         // Optimistic UI update: Show user message (files are not shown in chat bubble yet, sticking to text logic for now or we could add file indicators)
