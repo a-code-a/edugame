@@ -16,6 +16,6 @@ jobs:
         run: curl -f https://edugame-backend-9n0b.onrender.com
         continue-on-error: true # Don't fail the workflow if the service is momentarily down (though we want it up)
 
-      - name: Ping Frontend
-        run: curl -f https://edugame-frontend-gt3e.onrender.com/
-        continue-on-error: true
+#      - name: Ping Frontend
+#       run: curl -f https://edugame-frontend-gt3e.onrender.com/
+#       continue-on-error: true
