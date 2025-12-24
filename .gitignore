@@ -11,6 +11,11 @@ package-lock.json
 service-account-key.json
 server/service-account-key.json
 
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
 # Environment variables - NEVER commit these files!
 .env
 .env.local
