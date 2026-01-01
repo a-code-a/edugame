@@ -81,7 +81,9 @@ const allowedOrigins = [
   'http://localhost:3000', // Local development
   'http://localhost:5173', // Vite default port
   process.env.FRONTEND_URL, // Production frontend URL from Render
-  'https://edugame-frontend-gt3e.onrender.com' // Explicit production URL
+  'https://edugame-frontend-gt3e.onrender.com', // Explicit Render production URL
+  'https://edugamer-81de7.firebaseapp.com', // Firebase Hosting
+  'https://edugamer-81de7.web.app' // Firebase Hosting alternate domain
 ].filter(Boolean);
 
 // Log CORS configuration on startup
