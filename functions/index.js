@@ -62,7 +62,6 @@ const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:5173',
     process.env.FRONTEND_URL,
-    'https://edugame-frontend-gt3e.onrender.com', // Keep Render for rollback if needed
     'https://edugamer-81de7.firebaseapp.com',
     'https://edugamer-81de7.web.app'
 ].filter(Boolean);
