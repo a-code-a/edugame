@@ -53,7 +53,7 @@ export default function ExplorePage() {
     const loadGames = async () => {
         setLoading(true);
         const { games: publicGames, totalPages: total, totalGames: count } =
-            await DatabaseService.getInstance().getPublicGames(page, 12, {
+            await DatabaseService.getInstance().getPublicGames(page, 9, {
                 sort: sort as any,
                 subject,
                 grade,
@@ -114,6 +114,7 @@ export default function ExplorePage() {
                             <MinigameGrid
                                 games={games}
                                 onPlay={handlePlayGame}
+                                paginate={false}
                                 emptyMessage={
                                     debouncedSearch
                                         ? `Keine Spiele für "${debouncedSearch}" gefunden.`

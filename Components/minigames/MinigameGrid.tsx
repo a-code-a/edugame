@@ -10,6 +10,7 @@ interface MinigameGridProps {
   forceShowDelete?: boolean;
   deleteTooltip?: string;
   deleteIcon?: React.ReactNode;
+  paginate?: boolean;
 }
 
 const EmptyState: React.FC = () => {
@@ -38,9 +39,9 @@ const EmptyState: React.FC = () => {
   );
 };
 
-const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay, onDelete, forceShowDelete, deleteTooltip, deleteIcon }) => {
+const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay, onDelete, forceShowDelete, deleteTooltip, deleteIcon, paginate = true }) => {
   const [currentPage, setCurrentPage] = React.useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 9;
 
   // Reset to first page when games list changes (e.g. filtering)
   React.useEffect(() => {
@@ -51,9 +52,9 @@ const MinigameGrid: React.FC<MinigameGridProps> = ({ games, onPlay, onDelete, fo
     return <EmptyState />;
   }
 
-  const totalPages = Math.ceil(games.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentGames = games.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = paginate ? Math.ceil(games.length / itemsPerPage) : 1;
+  const startIndex = paginate ? (currentPage - 1) * itemsPerPage : 0;
+  const currentGames = paginate ? games.slice(startIndex, startIndex + itemsPerPage) : games;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
