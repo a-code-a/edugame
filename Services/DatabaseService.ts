@@ -3,7 +3,7 @@ import { auth } from '../firebase';
 
 // Use environment variable in production, localhost in development
 const API_BASE_URL = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
+  ? (import.meta.env.VITE_API_URL.endsWith('/api') ? import.meta.env.VITE_API_URL : `${import.meta.env.VITE_API_URL}/api`)
   : 'http://localhost:5000/api';
 
 interface SaveGameResponse {

@@ -103,11 +103,11 @@ app.use(async (req, res, next) => {
 });
 
 // Routes
-app.use('/games', gamesRoutes); // Note: path is relative to the function mount point
-app.use('/playlists', playlistRoutes);
+app.use('/api/games', gamesRoutes);
+app.use('/api/playlists', playlistRoutes);
 
 // Health check
-app.get('/health', (req, res) => {
+app.get('/api/health', (req, res) => {
     res.json({
         status: 'OK',
         timestamp: new Date().toISOString(),
@@ -117,7 +117,7 @@ app.get('/health', (req, res) => {
 });
 
 // Root
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
     res.json({
         message: 'EduGame Firebase Functions API',
         version: '1.0.0'
