@@ -50,7 +50,7 @@ export default function Login() {
                         Welcome back
                     </h2>
                     <p className="mt-2 text-center text-sm text-slate-600">
-                        Sign in to continue to EduGame
+                        Sign in to continue to EduGamer
                     </p>
                 </div>
                 {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm" role="alert">{error}</div>}

@@ -64,8 +64,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
             <div className="hidden sm:block">
               <span className="text-xl font-bold tracking-tight text-slate-900 relative">
                 Edu
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Game</span>
-                <span className="absolute -top-1 -right-2 text-[0.5rem] font-bold text-slate-500">DE</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Gamer</span>
               </span>
             </div>
           </div>

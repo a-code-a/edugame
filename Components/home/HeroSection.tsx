@@ -21,7 +21,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({
                 <div className="max-w-2xl space-y-4">
                     <span className="inline-flex items-center gap-2 rounded-full bg-white/60 px-4 py-2 text-sm font-medium text-purple-700 shadow-inner shadow-purple-200">
                         <SparkleIcon className="h-4 w-4 text-purple-500" />
-                        EduGame Studio
+                        EduGamer Studio
                     </span>
                     <h1 className="text-4xl sm:text-5xl font-bold leading-tight text-slate-900">
                         Lernen neu erleben

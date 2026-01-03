@@ -55,7 +55,7 @@ export default function Signup() {
                         Create an account
                     </h2>
                     <p className="mt-2 text-center text-sm text-slate-600">
-                        Join EduGame and start creating
+                        Join EduGamer and start creating
                     </p>
                 </div>
                 {error && <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm" role="alert">{error}</div>}

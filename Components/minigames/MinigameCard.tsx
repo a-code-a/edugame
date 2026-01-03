@@ -2,6 +2,7 @@ import React from 'react';
 import { Minigame } from '../../types';
 import DatabaseService from '../../Services/DatabaseService';
 import { useAuth } from '../../Context/AuthContext';
+import { SUBJECT_DISPLAY_OPTIONS } from '../../constants';
 
 interface MinigameCardProps {
   game: Minigame;
@@ -89,7 +90,7 @@ const SubjectBadge: React.FC<{ subject: string }> = ({ subject }) => {
       <span className="flex items-center justify-center">
         {variant.icon}
       </span>
-      {subject}
+      {SUBJECT_DISPLAY_OPTIONS[subject]?.label || subject}
     </div>
   );
 };

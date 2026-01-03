@@ -1,5 +1,5 @@
 {
-  "name": "EduGame Creator",
+  "name": "EduGamer Creator",
   "description": "A web application for teachers to select pre-built minigames for students or generate new ones using AI. Teachers can filter games by grade and subject, and use a 'vibe coding' feature to create custom HTML/CSS/JS minigames from a simple text prompt.",
   "requestFramePermissions": []
 }

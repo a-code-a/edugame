@@ -239,7 +239,7 @@ const GameViewer: React.FC = () => {
 
             <div className={`relative flex flex-col bg-white dark:bg-gray-800 shadow-2xl transition-all duration-300 ${isFullscreen ? 'w-full h-full rounded-none' : 'w-full max-w-[95vw] h-[95vh] rounded-2xl'} ${isShowing ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
                 <Helmet>
-                    <title>{currentGame.title} - EduGame</title>
+                    <title>{currentGame.title} - EduGamer</title>
                     <meta name="description" content={currentGame.description} />
                 </Helmet>
                 {/* Header - hidden in fullscreen */}

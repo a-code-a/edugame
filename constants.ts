@@ -27,5 +27,5 @@ export const SUBJECT_SHORTCUTS = [
 export const HERO_FILTERS = [
     { id: 'library', label: 'Bibliothek' },
     { id: 'templates', label: 'Vorlagen' },
-    { id: 'ai', label: 'EduGame AI' },
+    { id: 'ai', label: 'EduGamer AI' },
 ];
